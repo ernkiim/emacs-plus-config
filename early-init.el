@@ -5,7 +5,6 @@
       gc-cons-percentage 0.8)
 (setq read-process-output-max (* 64 1000))
 
-
 ;; transparent title bar
 (add-to-list 'default-frame-alist '(ns-appearance . dark)) ; nil for dark text
 (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))

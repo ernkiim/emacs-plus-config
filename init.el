@@ -18,7 +18,7 @@
  '(package-selected-packages
    '(auctex catppuccin-theme company consult doom-modeline
             exec-path-from-shell haskell-mode lean4-mode marginalia
-            orderless pdf-tools vertico))
+            orderless pdf-tools vertico vterm))
  '(tool-bar-mode nil))
 
 (custom-set-faces
@@ -90,6 +90,12 @@
 (use-package doom-modeline
   :init
   (doom-modeline-mode))
+
+
+;;; TERMINAL
+(use-package vterm
+  :commands vterm)
+
 
 ;;; LANGUAGES
 
