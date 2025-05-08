@@ -15,11 +15,11 @@
    '("7bea8c8136b95e40a3def71cc2953e29d2553078ba1730d8262f1dccc586fbab"
      "8c7e832be864674c220f9a9361c851917a93f921fedb7717b1b5ece47690c098"
      default))
+ '(line-number-mode nil)
  '(package-selected-packages
-   '(auctex company consult doom-modeline doom-themes
-            exec-path-from-shell golden-ratio-scroll-screen
-            haskell-mode lean4-mode marginalia nerd-icons-completion
-            orderless pdf-tools solaire-mode vertico vterm))
+   '(auctex catppuccin-theme company consult doom-modeline
+            exec-path-from-shell haskell-mode lean4-mode marginalia
+            orderless pdf-tools vertico vterm))
  '(tool-bar-mode nil))
 
 (custom-set-faces
@@ -36,7 +36,7 @@
 (when (memq window-system '(mac ns x))
   (exec-path-from-shell-initialize))
 
-;;; ---------- Preferences ----------
+;;; PREFERENCES
 
 ;; initial major mode to fundamental, want to defer prog-mode hook
 (setq initial-major-mode 'fundamental-mode)
@@ -54,22 +54,13 @@
 ;; a buffer-local variable when set.
 (setq-default indent-tabs-mode nil)
 
-;; Scroll half screen
-(require 'golden-ratio-scroll-screen)
-(global-set-key [remap scroll-down-command] 'golden-ratio-scroll-screen-down)
-(global-set-key [remap scroll-up-command] 'golden-ratio-scroll-screen-up)
-
 ;;; VERTICO, CONSULT, ETC.
 (use-package consult
   :bind (("C-c l" . consult-line)
          ("C-c b" . consult-buffer)))
 
-
 (use-package marginalia
   :after vertico
-  :custom
-  (marginalia-max-relative-age 0)
-  (marginalia-align 'right)
   :init
   (marginalia-mode))
 
@@ -94,40 +85,35 @@
   :custom
   (vertico-cycle t))
 
+
 (use-package nerd-icons-completion
   :after marginalia
   :config
   (nerd-icons-completion-mode)
   (add-hook 'marginalia-mode-hook #'nerd-icons-completion-marginalia-setup))
 
-;; ---------- Appearance ----------
+;; ----------  APPEARANCE  ---------- ;;
+(load-theme 'catppuccin :no-confirm)
 
-
-;; Use doom modeline
 (use-package doom-modeline
   :init
   (doom-modeline-mode)
-  (setq doom-modeline-height 28)
-  (setq doom-modeline-icon t))
-
-(use-package doom-themes
-  :config
-  ;; Global settings (defaults)
-  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
-        doom-themes-enable-italic t) ; if nil, italics is universally disabled
-  (load-theme 'doom-one t)
+  (setq doom-modeline-buffer-encoding nil))
 
 ;; Solaire mode dims help buffers etc.
 (require 'solaire-mode)
 (solaire-global-mode +1)
 
-;; Terminal
+;;; TERMINAL
 (use-package vterm
-  :commands vterm
-  :init
-  (add-hook 'vterm-mode-hook (lambda() (display-line-numbers-mode -1))))
+  :commands vterm)
 
-;; ---------- LANGUAGES ---------- ;;
+;; Scroll half screen
+(require 'golden-ratio-scroll-screen)
+(global-set-key [remap scroll-down-command] 'golden-ratio-scroll-screen-down)
+(global-set-key [remap scroll-up-command] 'golden-ratio-scroll-screen-up)
+
+;;; LANGUAGES
 
 ;; LSP MODE
 (use-package lsp-mode
@@ -172,7 +158,9 @@
   :commands latex-mode
   :config
   (setq TeX-auto-save t
-        TeX-parse-self t))
+        TeX-parse-self t)
+  (add-hook 'TeX-after-compilation-finished-functions
+            #'TeX-revert-document-buffer))
 
 (use-package pdf-tools
   :magic ("%PDF" . pdf-view-mode)
@@ -185,7 +173,7 @@
   (pdf-tools-install))
 
 
-;; ---------- Cleanup ----------
+;; end
 (setq gc-cons-threshold (* 2 1000 1000)
       gc-cons-percentage 0.5)
 
