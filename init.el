@@ -15,11 +15,10 @@
    '("7bea8c8136b95e40a3def71cc2953e29d2553078ba1730d8262f1dccc586fbab"
      "8c7e832be864674c220f9a9361c851917a93f921fedb7717b1b5ece47690c098"
      default))
- '(line-number-mode nil)
  '(package-selected-packages
-   '(auctex catppuccin-theme company consult doom-modeline
-            exec-path-from-shell haskell-mode lean4-mode marginalia
-            orderless pdf-tools vertico vterm))
+   '(auctex company consult doom-modeline exec-path-from-shell
+            haskell-mode lean4-mode marginalia orderless pdf-tools
+            solaire-mode vertico vterm))
  '(tool-bar-mode nil))
 
 (custom-set-faces
@@ -93,15 +92,25 @@
   (add-hook 'marginalia-mode-hook #'nerd-icons-completion-marginalia-setup))
 
 ;; ----------  APPEARANCE  ---------- ;;
-(load-theme 'catppuccin :no-confirm)
+(use-package doom-themes
+  :config
+  ;; Global settings (defaults)
+  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+        doom-themes-enable-italic t) ; if nil, italics is universally disabled
+  (load-theme 'doom-palenight t)
+
+  ;; Enable flashing mode-line on errors
+  (doom-themes-visual-bell-config))
 
 (use-package doom-modeline
   :init
   (doom-modeline-mode)
-  (setq doom-modeline-buffer-encoding nil))
+  (setq doom-modeline-height 30)
+  (setq doom-modeline-buffer-encoding nil)
+  ;; remove scroll percentage
+  (setq doom-modeline-percent-position '(-3 "")))
 
-;; Solaire mode dims help buffers etc.
-(require 'solaire-mode)
+;; Dim lame buffers
 (solaire-global-mode +1)
 
 ;;; TERMINAL
