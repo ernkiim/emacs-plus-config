@@ -5,9 +5,17 @@
       gc-cons-percentage 0.8)
 (setq read-process-output-max (* 64 1000))
 
-;; transparent title bar
+;; Blend title bar
 (add-to-list 'default-frame-alist '(ns-appearance . dark)) ; nil for dark text
 (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
+
+;; Transparent background
+;; set transparency
+(set-frame-parameter (selected-frame) 'alpha '(90 90))
+(add-to-list 'default-frame-alist '(alpha 90 90))
+(set-frame-parameter nil 'alpha-background 100) ; For current frame
+(add-to-list 'default-frame-alist '(alpha-background . 100)) ; For all new frames henceforth
+
 
 ;; no title bar text
 (setq ns-use-proxy-icon nil)
@@ -15,7 +23,6 @@
 
 ;; fix bottom gap
 (setq frame-resize-pixelwise t)
-
 
 ;; no tool bar
 (tool-bar-mode 0)

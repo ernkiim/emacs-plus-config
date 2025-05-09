@@ -47,7 +47,7 @@
 ;; Dim auxiliary buffers
 (solaire-global-mode +1)
 
-;; yes smooth scroll
+;; Smooth scroll
 pixel-scroll-precision-mode
 
 ;; no line wrapping, yes horizontal scroll
@@ -102,7 +102,7 @@ pixel-scroll-precision-mode
   ;; Global settings (defaults)
   (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
         doom-themes-enable-italic t) ; if nil, italics is universally disabled
-  (load-theme 'doom-palenight t))
+  (load-theme 'doom-nord t))
 
 (use-package doom-modeline
   :init
