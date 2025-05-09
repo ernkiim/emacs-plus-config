@@ -16,6 +16,7 @@
 ;; fix bottom gap
 (setq frame-resize-pixelwise t)
 
+
 ;; no tool bar
 (tool-bar-mode 0)
 
@@ -25,7 +26,7 @@
 ;; no line wrap
 (setq-default truncate-lines t)
 
- ;; i know what GNU is
+;; i know what GNU is
 (setq inhibit-startup-echo-area-message t)
 (defun display-startup-echo-area-message ()
   (message ""))

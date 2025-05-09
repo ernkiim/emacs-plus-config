@@ -39,8 +39,17 @@
 
 ;; initial major mode to fundamental, want to defer prog-mode hook
 (setq initial-major-mode 'fundamental-mode)
+
+;; Save sessions history
+(setq savehist-save-minibuffer-history 1)
+(savehist-mode t)
+
+;; Dim auxiliary buffers
+(solaire-global-mode +1)
+
 ;; yes smooth scroll
-(pixel-scroll-precision-mode)
+pixel-scroll-precision-mode
+
 ;; no line wrapping, yes horizontal scroll
 (setq mouse-wheel-tilt-scroll t
       mouse-wheel-flip-direction t)
@@ -55,20 +64,17 @@
 
 ;;; VERTICO, CONSULT, ETC.
 (use-package consult
-  :bind (("C-c l" . consult-line)
-         ("C-c b" . consult-buffer)))
+  :bind
+  (("C-c l" . consult-line)
+   ("C-c b" . consult-buffer)))
 
+;; Can't defer
 (use-package marginalia
-  :after vertico
   :init
   (marginalia-mode))
 
-(use-package savehist
-  :init
-  (savehist-mode))
 
 (use-package orderless
-  :after vertico
   :custom
   (completion-styles '(basic
 		       substring
@@ -86,7 +92,6 @@
 
 
 (use-package nerd-icons-completion
-  :after marginalia
   :config
   (nerd-icons-completion-mode)
   (add-hook 'marginalia-mode-hook #'nerd-icons-completion-marginalia-setup))
@@ -97,10 +102,7 @@
   ;; Global settings (defaults)
   (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
         doom-themes-enable-italic t) ; if nil, italics is universally disabled
-  (load-theme 'doom-palenight t)
-
-  ;; Enable flashing mode-line on errors
-  (doom-themes-visual-bell-config))
+  (load-theme 'doom-palenight t))
 
 (use-package doom-modeline
   :init
@@ -110,12 +112,12 @@
   ;; remove scroll percentage
   (setq doom-modeline-percent-position '(-3 "")))
 
-;; Dim lame buffers
-(solaire-global-mode +1)
 
 ;;; TERMINAL
 (use-package vterm
-  :commands vterm)
+  :bind
+  (("M-s-t" . vterm)
+   ("M-s-T" . vterm-other-window)))
 
 ;; Scroll half screen
 (require 'golden-ratio-scroll-screen)
