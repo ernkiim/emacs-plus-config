@@ -15,6 +15,7 @@
    '("7bea8c8136b95e40a3def71cc2953e29d2553078ba1730d8262f1dccc586fbab"
      "8c7e832be864674c220f9a9361c851917a93f921fedb7717b1b5ece47690c098"
      default))
+ '(line-number-mode nil)
  '(package-selected-packages
    '(auctex company consult doom-modeline exec-path-from-shell
             haskell-mode lean4-mode marginalia orderless pdf-tools

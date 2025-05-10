@@ -9,14 +9,6 @@
 (add-to-list 'default-frame-alist '(ns-appearance . dark)) ; nil for dark text
 (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
 
-;; Transparent background
-;; set transparency
-(set-frame-parameter (selected-frame) 'alpha '(95 95))
-(add-to-list 'default-frame-alist '(alpha 95 95))
-(set-frame-parameter nil 'alpha-background 100) ; For current frame
-(add-to-list 'default-frame-alist '(alpha-background . 100)) ; For all new frames henceforth
-
-
 ;; no title bar text
 (setq ns-use-proxy-icon nil)
 (setq frame-title-format "Emacs")
