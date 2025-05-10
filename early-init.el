@@ -11,15 +11,15 @@
 
 ;; Transparent background
 ;; set transparency
-(set-frame-parameter (selected-frame) 'alpha '(90 90))
-(add-to-list 'default-frame-alist '(alpha 90 90))
+(set-frame-parameter (selected-frame) 'alpha '(95 95))
+(add-to-list 'default-frame-alist '(alpha 95 95))
 (set-frame-parameter nil 'alpha-background 100) ; For current frame
 (add-to-list 'default-frame-alist '(alpha-background . 100)) ; For all new frames henceforth
 
 
 ;; no title bar text
 (setq ns-use-proxy-icon nil)
-(setq frame-title-format "\n")
+(setq frame-title-format "Emacs")
 
 ;; fix bottom gap
 (setq frame-resize-pixelwise t)

@@ -73,7 +73,6 @@ pixel-scroll-precision-mode
   :init
   (marginalia-mode))
 
-
 (use-package orderless
   :custom
   (completion-styles '(basic
@@ -90,13 +89,12 @@ pixel-scroll-precision-mode
   :custom
   (vertico-cycle t))
 
-
 (use-package nerd-icons-completion
   :config
   (nerd-icons-completion-mode)
   (add-hook 'marginalia-mode-hook #'nerd-icons-completion-marginalia-setup))
 
-;; ----------  APPEARANCE  ---------- ;;
+;; Doom
 (use-package doom-themes
   :config
   ;; Global settings (defaults)
@@ -128,10 +126,7 @@ pixel-scroll-precision-mode
 
 ;; LSP MODE
 (use-package lsp-mode
-  :hook
-  prog-mode
-  :custom
-  (lsp-completion-provider :nil)
+  :hook prog-mode
   :config
   (setq lsp-warn-no-matched-clients nil
         lsp-file-watch-threshold 5000))
