@@ -1,4 +1,4 @@
-;;; early-init.el --- Early initialization -*- lexical-binding: t -*-
+ ;; ;;; early-init.el --- Early initialization -*- lexical-binding: t -*-
 
 ;; Performance
 (setq gc-cons-threshold (* 100 1000 1000)
@@ -11,7 +11,7 @@
 
 ;; no title bar text
 (setq ns-use-proxy-icon nil)
-(setq frame-title-format "Emacs")
+(setq frame-title-format "Emacs\n")
 
 ;; fix bottom gap
 (setq frame-resize-pixelwise t)
@@ -36,6 +36,8 @@
 ;; no scroll bar
 (scroll-bar-mode 0)
 
+(pixel-scroll-precision-mode 1)
+
 (setq
  ;; no splash screen
  inhibit-startup-screen t
@@ -43,5 +45,3 @@
  initial-scratch-message nil
  ;; silence
  ring-bell-function 'ignore)
-
-
