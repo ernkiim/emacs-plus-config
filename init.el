@@ -3,21 +3,30 @@
 ;;; Commentary:
 ;;; Emacs Startup File --- initialization for Emacs
 ;;; Code:
-
-
-;;; CUSTOM
-
+(require 'package)
 
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 
-;;; PREFERENCES
+(package-initialize)
 
+;; Install use-package if not already installed
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
+
+(require 'use-package)
+
+;;; PREFERENCES
+(setq use-package-compute-statistics t)
 ;; initial major mode to fundamental, want to defer prog-mode hook
 (setq initial-major-mode 'fundamental-mode)
 
 ;; Save sessions history
 (setq savehist-save-minibuffer-history 1)
 (savehist-mode t)
+
+;; modeline
+(mood-line-mode t)
 
 ;; Dim auxiliary buffers
 (solaire-global-mode +1)
@@ -70,12 +79,6 @@
   :config
   (nerd-icons-completion-mode)
   (add-hook 'marginalia-mode-hook #'nerd-icons-completion-marginalia-setup))
-
-
-;; Appearance
-;;(load-theme 'catppuccin :no-confirm)
-
-(use-package mood-line)
 
 ;;; TERMINAL
 (use-package vterm
@@ -153,15 +156,16 @@
   :config
   (pdf-tools-install))
 
-
+;;; CUSTOM
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(custom-enabled-themes '(adwaita))
+ '(custom-enabled-themes '(nord))
  '(custom-safe-themes
-   '("7bea8c8136b95e40a3def71cc2953e29d2553078ba1730d8262f1dccc586fbab"
+   '("5a4cdc4365122d1a17a7ad93b6e3370ffe95db87ed17a38a94713f6ffe0d8ceb"
+     "7bea8c8136b95e40a3def71cc2953e29d2553078ba1730d8262f1dccc586fbab"
      "8c7e832be864674c220f9a9361c851917a93f921fedb7717b1b5ece47690c098"
      default))
  '(line-number-mode nil)
@@ -183,14 +187,11 @@
      (:buffer-read-only . 9632) (:frame-client . 57504)
      (:count-separator . 215)))
  '(mood-line-mode t)
- 
  '(package-selected-packages
    '(auctex company consult exec-path-from-shell haskell-mode lean4-mode
-            marginalia orderless pdf-tools solaire-mode vertico vterm))
+            marginalia nord-theme orderless pdf-tools solaire-mode
+            vertico vterm))
  '(tool-bar-mode nil))
-;; end
-(setq gc-cons-threshold (* 2 1000 1000)
-      gc-cons-percentage 0.5)
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -198,6 +199,12 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(default ((t (:family "MesloLGS Nerd Font Mono" :foundry "nil" :slant normal :weight regular :height 140 :width normal)))))
+
+;; end
+(setq gc-cons-threshold (* 2 1000 1000)
+      gc-cons-percentage 0.5)
+
+
 
 
 (provide 'init)
