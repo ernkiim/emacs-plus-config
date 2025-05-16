@@ -1,23 +1,23 @@
+
 ;;; Init.el --- Initialization file for Emacs -*- lexical-binding: t;-*-
 
+(setq use-package-compute-statistics t)
 ;;; Commentary:
 ;;; Emacs Startup File --- initialization for Emacs
 ;;; Code:
 (require 'package)
-
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
-
 (package-initialize)
-
-;; Install use-package if not already installed
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
   (package-install 'use-package))
-
 (require 'use-package)
 
+(setq use-package-always-defer t
+      use-package-always-ensure t)
+
 ;;; PREFERENCES
-(setq use-package-compute-statistics t)
+;;(setq use-package-compute-statistics t)
 ;; initial major mode to fundamental, want to defer prog-mode hook
 (setq initial-major-mode 'fundamental-mode)
 
@@ -27,9 +27,6 @@
 
 ;; modeline
 (mood-line-mode t)
-
-;; Dim auxiliary buffers
-(solaire-global-mode +1)
 
 ;; no line wrapping, yes horizontal scroll
 (setq mouse-wheel-tilt-scroll t
@@ -93,9 +90,6 @@
   (("C-v" . 'golden-ratio-scroll-screen-down)
    ("M-v" . 'golden-ratio-scroll-screen-up)))
 
-
-
-
 ;;; LANGUAGES
 
 ;; LSP MODE
@@ -106,6 +100,13 @@
   (setq lsp-warn-no-matched-clients nil
         lsp-file-watch-threshold 5000)))
 
+(use-package lsp-mode
+  :hook (prog-mode . lsp-deferred)
+  :config
+  (setq read-process-output-max (* 1024 1024) ;; 1mb
+        lsp-idle-delay 0.500
+        lsp-log-io nil
+        lsp-completion-provider :capf))
 
 ;; COMPANY
 (use-package company
@@ -124,7 +125,7 @@
 (use-package haskell-mode
   :mode "\\.hs$")
 
-;;; make environment variables available (not path inj?)
+;; make environment variables available (not path inj?)
 (when (memq window-system '(mac ns x))
   (exec-path-from-shell-initialize))
 ;; AGDA
@@ -193,6 +194,7 @@
             vertico vterm))
  '(tool-bar-mode nil))
 
+
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -200,8 +202,9 @@
  ;; If there is more than one, they won't work right.
  '(default ((t (:family "MesloLGS Nerd Font Mono" :foundry "nil" :slant normal :weight regular :height 140 :width normal)))))
 
+
 ;; end
-(setq gc-cons-threshold (* 2 1000 1000)
+(setq gc-cons-threshold (* 1 1000 1000)
       gc-cons-percentage 0.5)
 
 

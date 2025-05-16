@@ -1,4 +1,4 @@
- ;; ;;; early-init.el --- Early initialization -*- lexical-binding: t -*-
+;;; early-init.el --- Early initialization -*- lexical-binding: t -*-
 
 ;; Performance
 (setq gc-cons-threshold (* 100 1000 1000)
