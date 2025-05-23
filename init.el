@@ -46,8 +46,9 @@
   (("M-g g"   . consult-goto-line)
    ("M-g M-g" . consult-goto-line)
    ("M-y"     . consult-yank-pop)
-   ("C-c l"   . consult-line)
-   ("C-x b" . consult-buffer))
+   ("s-l"     . consult-line)
+   ("C-x b"   . consult-buffer)
+   ("C-x C-b" . consult-buffer))
   :hook (completion-list-mode . consult-preview-at-point-mode))
 
 (use-package vertico
@@ -149,13 +150,11 @@
 
 (use-package pdf-tools
   :magic ("%PDF" . pdf-view-mode)
-  :after auctex
-  :init
+  :config
   (setq TeX-view-program-selection '((output-pdf "PDF Tools"))
         TeX-view-program-list '(("PDF Tools" TeX-pdf-tools-sync-view))
         TeX-source-correlate-start-server t
         TeX-save-query nil)
-  :config
   (pdf-tools-install))
 
 ;; ---------- Custom ---------- ;;
