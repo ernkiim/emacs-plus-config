@@ -1,5 +1,4 @@
 ;;; Init.el --- Initialization file for Emacs -*- lexical-binding: t; -*-
-
 ;;; Commentary:
 ;;; Ern Kim's Emacs startup file
 
@@ -43,11 +42,13 @@
 
 ;; buffer management
 (keymap-global-set "M-o" 'other-window)
+(keymap-global-set "s-t" 'split-window-right)
 (keymap-global-set "s-w" 'delete-window)
 (keymap-global-set "C-s-w" 'kill-buffer-and-window)
 
 ;; Navigate windows with number keys
 (use-package winum
+  :defer t
   :bind (("s-0" . 'winum-select-window-0-or-10)
          ("s-1" . 'winum-select-window-1)
          ("s-2" . 'winum-select-window-2)
@@ -59,8 +60,8 @@
          ("s-8" . 'winum-select-window-8)
          ("s-9" . 'winum-select-window-9))
   :config
-  (winum-mode))
-
+  (winum-mode)
+  (message "winum"))
 
 ;; Scroll zoom conflicts with smooth scroll momentum
 (keymap-global-unset "C-<wheel-up>")
@@ -114,13 +115,6 @@
 		       flex))
   (completion-category-defaults nil)
   (completion-category-overrides '((file (styles basic partial-completion)))))
-
-(use-package nerd-icons-completion
-  :after marginalia
-  :init
-  (nerd-icons-completion-mode)
-  :config
-  (add-hook 'marginalia-mode-hook #'nerd-icons-completion-marginalia-setup))
 
 
 ;; ---------- Terminal Emulator ---------- ;;
@@ -197,9 +191,8 @@
       "  " (mood-line-segment-process) "  " " ")))
  '(package-selected-packages
    '(auctex consult dracula-theme exec-path-from-shell flycheck
-            haskell-mode marginalia mood-line nerd-icons-completion
-            orderless pdf-tools sbt-mode scala-mode vertico vterm
-            winum))
+            haskell-mode marginalia mood-line orderless pdf-tools
+            sbt-mode scala-mode vertico vterm winum))
  '(tool-bar-mode nil))
 
 (custom-set-faces
