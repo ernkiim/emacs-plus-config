@@ -21,12 +21,6 @@
         use-package-expand-minimally t
         use-package-compute-statistics t))
 
-;; ;; Uncomment if programs still not being found, pretty slow to load
-;; (use-package exec-path-from-shell
-;;   :init
-;;   (when (memq window-system '(mac ns x))
-;;   (exec-path-from-shell-initialize)))
-
 
 ;; ---------- Preferences ---------- ;;
 
@@ -38,16 +32,11 @@
 ;; Misc. preferences
 (use-package emacs
   :bind (("M-o"   . 'other-window)
-         ("s-t"   . 'split-window-right)
-         ("s-w"   . 'delete-window)
          ("C-s-w" .'kill-buffer-and-window)
          ;; Momentum can trigger scroll wheel bindings
          ("C-<wheel-up>"   . nil)
          ("C-<wheel-down>" . nil))
   :config
-  ;; Stupid path solution
-  (setenv "PATH" "/Users/e/.cabal/bin:/Users/e/.ghcup/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/Library/TeX/texbin:/Users/e/Library/Application Support/Coursier/bin:/opt/homebrew/bin:$HOME/.local/bin:$HOME/.ghcup/bin:$HOME/.ghcup/ghc/9.6.7/bin:$HOME/.cabal/bin:/Library/TeX/texbin:")
-  (setq exec-path (split-string (getenv "PATH") path-separator))
   ;; Hack startup message
   (defun display-startup-echo-area-message ()
     (message ""))
@@ -70,10 +59,22 @@
   ;; Hide startup mess
   (inhibit-startup-screen t)
   (initial-scratch-message "")
-  :hook ; Builtin minor modes
+  ;; Suppress emacsclient "C-x 5 0" reminder
+  (server-client-instructions nil)
+  ;; 'y' instead of 'yes'
+  (use-short-answers t)
+  ;; This is pretty neat
+  (show-paren-context-when-offscreen 'overlay) ; Emacs 29
+  :hook
   ((after-init . pixel-scroll-precision-mode)
-   (after-init . savehist-mode)))
+   (after-init . (lambda () (select-frame-set-input-focus (selected-frame))))
+   (server-after-make-frame . (lambda () (select-frame-set-input-focus (selected-frame))))))
 
+(use-package savehist
+  :hook after-init)
+
+(use-package repeat
+  :hook after-init)
 ;; ;; Navigate windows with number keys
 ;; Not compatible with mood line out of the box
 ;; (use-package winum
@@ -92,6 +93,7 @@
 
 ;; Theme
 (use-package dracula-theme)
+
 
 ;; ---------- Marginalia, Vertico, Consult ---------- ;;
 
@@ -114,7 +116,6 @@
   :custom (vertico-cycle t))
 
 (use-package orderless
-  :defer t
   :custom
   (completion-styles '(orderless
                        basic
@@ -124,6 +125,32 @@
   (completion-category-defaults nil)
   (completion-category-overrides '((file (styles basic partial-completion)))))
 
+;; Corfu completion
+
+(use-package corfu
+  :custom
+  (corfu-cycle t)                 ; Allows cycling through candidates
+  (corfu-auto t)                  ; Enable auto completion
+  (corfu-auto-prefix 2)
+  (corfu-auto-delay 0.1)
+  (corfu-popupinfo-delay '(0.5 . 0.2))
+  (corfu-preview-current 'insert) ; insert previewed candidate
+  (corfu-preselect 'prompt)
+  (corfu-on-exact-match nil)      ; Don't auto expand tempel snippets
+  ;; Optionally use TAB for cycling, default is `corfu-complete'.
+  :bind (:map corfu-map
+              ("M-SPC"      . corfu-insert-separator)
+              ("TAB"        . corfu-next)
+              ([tab]        . corfu-next)
+              ("S-TAB"      . corfu-previous)
+              ([backtab]    . corfu-previous)
+              ("S-<return>" . corfu-insert)
+              ("RET"        . nil))
+
+  :init
+  (global-corfu-mode)
+  (corfu-history-mode)
+  (corfu-popupinfo-mode)) ; Popup completion info
 
 ;; ---------- Terminal Emulator ---------- ;;
 
@@ -135,7 +162,6 @@
 ;; (use-package multi-vterm
 ;;   :after vterm
 ;;   )
-
 
 ;; ---------- Programming modes ---------- ;;
 
@@ -197,7 +223,7 @@
       (mood-line-segment-misc-info) "  " (mood-line-segment-checker)
       "  " (mood-line-segment-process) "  " " ")))
  '(package-selected-packages
-   '(auctex consult dracula-theme haskell-mode marginalia mood-line
+   '(auctex consult corfu dracula-theme haskell-mode marginalia mood-line
             orderless pdf-tools sbt-mode scala-mode vertico vterm))
  '(tool-bar-mode nil))
 

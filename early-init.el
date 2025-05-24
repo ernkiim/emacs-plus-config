@@ -6,7 +6,8 @@
       read-process-output-max (* 1024 1024))
 
 ;; Initial appearance
-(setq-default ns-use-proxy-icon nil
+(setq-default package-native-compile t
+              ns-use-proxy-icon nil
               tool-bar-mode nil
               frame-title-format "Emacs\n"
               frame-resize-pixelwise t
