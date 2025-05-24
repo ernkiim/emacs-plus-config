@@ -17,18 +17,11 @@
   (package-install 'use-package))
 
 (eval-and-compile
-  (setq use-package-always-defer t
-        use-package-always-ensure t ;; Set to nil normally
+  (setq use-package-always-ensure nil ; Set to nil normally
         use-package-expand-minimally t
         use-package-compute-statistics t))
 
-;; ---------- PATH injection ---------- ;;
-
-;; Update here every time you change PATH
-(setenv "PATH" "/Users/e/.cabal/bin:/Users/e/.ghcup/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/Library/TeX/texbin:/Users/e/Library/Application Support/Coursier/bin:/opt/homebrew/bin:$HOME/.local/bin:$HOME/.ghcup/bin:$HOME/.ghcup/ghc/9.6.7/bin:$HOME/.cabal/bin:/Library/TeX/texbin:")
-(setq exec-path (split-string (getenv "PATH") path-separator))
-
-;; Uncomment if programs still not being found, pretty slow to load
+;; ;; Uncomment if programs still not being found, pretty slow to load
 ;; (use-package exec-path-from-shell
 ;;   :init
 ;;   (when (memq window-system '(mac ns x))
@@ -37,58 +30,73 @@
 
 ;; ---------- Preferences ---------- ;;
 
-(setq mouse-wheel-tilt-scroll t
-      mouse-wheel-flip-direction t)
-
-;; buffer management
-(keymap-global-set "M-o" 'other-window)
-(keymap-global-set "s-t" 'split-window-right)
-(keymap-global-set "s-w" 'delete-window)
-(keymap-global-set "C-s-w" 'kill-buffer-and-window)
-
-;; Navigate windows with number keys
-(use-package winum
-  :defer t
-  :bind (("s-0" . 'winum-select-window-0-or-10)
-         ("s-1" . 'winum-select-window-1)
-         ("s-2" . 'winum-select-window-2)
-         ("s-3" . 'winum-select-window-3)
-         ("s-4" . 'winum-select-window-4)
-         ("s-5" . 'winum-select-window-5)
-         ("s-6" . 'winum-select-window-6)
-         ("s-7" . 'winum-select-window-7)
-         ("s-8" . 'winum-select-window-8)
-         ("s-9" . 'winum-select-window-9))
-  :config
-  (winum-mode)
-  (message "winum"))
-
-;; Scroll zoom conflicts with smooth scroll momentum
-(keymap-global-unset "C-<wheel-up>")
-(keymap-global-unset "C-<wheel-down>")
-
-;; Save history
-(savehist-mode 1)
-
-;; Smooth Scroll
-(pixel-scroll-precision-mode 1)
-
-;; Mood-line is MUCH faster than doom
+;; Much faster than doom-modeline
 (use-package mood-line
-  :init
-  (mood-line-mode t)
+  :init (mood-line-mode +1)
+  :custom (mood-line-glyph-alist mood-line-glyphs-fira-code))
+
+;; Misc. preferences
+(use-package emacs
+  :bind (("M-o"   . 'other-window)
+         ("s-t"   . 'split-window-right)
+         ("s-w"   . 'delete-window)
+         ("C-s-w" .'kill-buffer-and-window)
+         ;; Momentum can trigger scroll wheel bindings
+         ("C-<wheel-up>"   . nil)
+         ("C-<wheel-down>" . nil))
+  :config
+  ;; Stupid path solution
+  (setenv "PATH" "/Users/e/.cabal/bin:/Users/e/.ghcup/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/Library/TeX/texbin:/Users/e/Library/Application Support/Coursier/bin:/opt/homebrew/bin:$HOME/.local/bin:$HOME/.ghcup/bin:$HOME/.ghcup/ghc/9.6.7/bin:$HOME/.cabal/bin:/Library/TeX/texbin:")
+  (setq exec-path (split-string (getenv "PATH") path-separator))
+  ;; Hack startup message
+  (defun display-startup-echo-area-message ()
+    (message ""))
   :custom
-  (mood-line-glyph-alist mood-line-glyphs-fira-code))
+  ;; Horizontal scrolling (in macos direction)
+  (mouse-wheel-tilt-scroll t)
+  (mouse-wheel-flip-direction t)
+  ;; Defer prog hook
+  (initial-major-mode 'fundamental-mode)
+  ;; Helps performance apparently
+  (inhibit-compacting-font-caches t)
+  ;; Silence
+  (ring-bell-function 'ignore)
+  ;; No line wrapping
+  (truncate-lines t)
+  ;; Indent with spaces
+  (indent-tabs-mode nil)
+  ;; Suppress annoying little confirm windows
+  (use-file-dialog nil)
+  ;; Hide startup mess
+  (inhibit-startup-screen t)
+  (initial-scratch-message "")
+  :hook ; Builtin minor modes
+  ((after-init . pixel-scroll-precision-mode)
+   (after-init . savehist-mode)))
+
+;; ;; Navigate windows with number keys
+;; Not compatible with mood line out of the box
+;; (use-package winum
+;;   :hook before-init
+;;   :bind (("s-0" . 'winum-select-window-0-or-10)
+;;          ("s-1" . 'winum-select-window-1)
+;;          ("s-2" . 'winum-select-window-2)
+;;          ("s-3" . 'winum-select-window-3)
+;;          ("s-4" . 'winum-select-window-4)
+;;          ("s-5" . 'winum-select-window-5)
+;;          ("s-6" . 'winum-select-window-6)
+;;          ("s-7" . 'winum-select-window-7)
+;;          ("s-8" . 'winum-select-window-8)
+;;          ("s-9" . 'winum-select-window-9))
+;;   :custom (winum-mode +1))
 
 ;; Theme
 (use-package dracula-theme)
 
-
 ;; ---------- Marginalia, Vertico, Consult ---------- ;;
 
 (use-package marginalia
-  :init
-  (marginalia-mode))
+  :hook after-init)
 
 (use-package consult
   :bind
@@ -100,13 +108,13 @@
    ("C-x C-b" . consult-buffer))
   :hook (completion-list-mode . consult-preview-at-point-mode))
 
+
 (use-package vertico
-  :init
-  (vertico-mode)
-  :custom
-  (vertico-cycle t))
+  :hook after-init
+  :custom (vertico-cycle t))
 
 (use-package orderless
+  :defer t
   :custom
   (completion-styles '(orderless
                        basic
@@ -129,13 +137,12 @@
 ;;   )
 
 
-
 ;; ---------- Programming modes ---------- ;;
-
 
 ;; Haskell
 (use-package haskell-mode
   :mode "\\.hs$")
+
 
 ;; Scala
 (use-package scala-mode
@@ -159,16 +166,16 @@
   :commands latex-mode
   :config
   (add-hook 'TeX-after-compilation-finished-functions
-            #'TeX-revert-document-buffer))
+            #'TeX-revert-document-buffer)
+  :custom
+  (TeX-view-program-selection '((output-pdf "PDF Tools")))
+  (TeX-view-program-list '(("PDF Tools" TeX-pdf-tools-sync-view)))
+  (TeX-source-correlate-start-server t)
+  (TeX-save-query nil))
 
 (use-package pdf-tools
   :magic ("%PDF" . pdf-view-mode)
-  :config
-  (setq TeX-view-program-selection '((output-pdf "PDF Tools"))
-        TeX-view-program-list '(("PDF Tools" TeX-pdf-tools-sync-view))
-        TeX-source-correlate-start-server t
-        TeX-save-query nil)
-  (pdf-tools-install))
+  :config (pdf-tools-install :no-query))
 
 ;; ---------- Custom ---------- ;;
 
@@ -190,9 +197,8 @@
       (mood-line-segment-misc-info) "  " (mood-line-segment-checker)
       "  " (mood-line-segment-process) "  " " ")))
  '(package-selected-packages
-   '(auctex consult dracula-theme exec-path-from-shell flycheck
-            haskell-mode marginalia mood-line orderless pdf-tools
-            sbt-mode scala-mode vertico vterm winum))
+   '(auctex consult dracula-theme haskell-mode marginalia mood-line
+            orderless pdf-tools sbt-mode scala-mode vertico vterm))
  '(tool-bar-mode nil))
 
 (custom-set-faces
@@ -200,12 +206,12 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(default ((t (:family "Meslo LG S" :foundry "nil" :slant normal :weight regular :height 140 :width normal)))))
+ '(default ((t (:family "Meslo LG S" :foundry "nil" :slant normal :weight regular :height 130 :width normal)))))
 
 
 ;; ---------- End ---------- ;;
 
-(setq gc-cons-threshold (* 1 1000 1000)
+(setq gc-cons-threshold (* 1 1024 1024)
       gc-cons-percentage 0.5)
 
 (provide 'init)
