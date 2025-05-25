@@ -206,6 +206,9 @@
    'self-insert-command
    minibuffer-local-completion-map))
 
+(use-package scala-repl
+  :commands scala-repl-run)
+
 ;; Latex
 (use-package auctex
   :commands latex-mode
@@ -244,7 +247,7 @@
  '(package-selected-packages
    '(auctex consult corfu dracula-theme haskell-ts-mode marginalia
             mood-line nerd-icons-completion orderless pdf-tools
-            sbt-mode scala-ts-mode vertico vterm))
+            sbt-mode scala-repl scala-ts-mode vertico vterm))
  '(package-vc-selected-packages
    '((eglot-booster :vc-backend Git :url
                     "https://github.com/jdtsmith/eglot-booster")))
