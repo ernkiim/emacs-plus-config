@@ -73,8 +73,6 @@
 (use-package savehist
   :hook after-init)
 
-(use-package repeat
-  :hook after-init)
 ;; ;; Navigate windows with number keys
 ;; Not compatible with mood line out of the box
 ;; (use-package winum
@@ -99,6 +97,12 @@
 
 (use-package marginalia
   :hook after-init)
+
+(use-package nerd-icons-completion
+  :after marginalia
+  :config
+  (nerd-icons-completion-mode)
+  (add-hook 'marginalia-mode-hook #'nerd-icons-completion-marginalia-setup))
 
 (use-package consult
   :bind
@@ -146,7 +150,6 @@
               ([backtab]    . corfu-previous)
               ("S-<return>" . corfu-insert)
               ("RET"        . nil))
-
   :init
   (global-corfu-mode)
   (corfu-history-mode)
@@ -164,15 +167,34 @@
 ;;   )
 
 ;; ---------- Programming modes ---------- ;;
+(use-package eglot
+  :hook ((scala-ts-mode . eglot-ensure)
+         (haskell-ts-mode . eglot-ensure))
+  :config  
+  (add-to-list 'eglot-server-programs
+               `((scala-mode scala-ts-mode)
+                 . ,(alist-get 'scala-mode eglot-server-programs)))) ; this lets eglot recognize scala somehow
 
 ;; Haskell
-(use-package haskell-mode
-  :mode "\\.hs$")
+;; (use-package haskell-mode
+;;   :mode "\\.hs$")
+(use-package haskell-ts-mode
+  :mode "\\.hs$"
+  :custom
+  (haskell-ts-font-lock-level 4)
+  (haskell-ts-use-indent t)
+  (haskell-ts-ghci "ghci")
+  (haskell-ts-use-indent t)
+  :config
+  (add-to-list 'treesit-language-source-alist
+   '(haskell . ("https://github.com/tree-sitter/tree-sitter-haskell" "v0.23.1")))
+  (unless (treesit-grammar-location 'haskell)
+   (treesit-install-language-grammar 'haskell)))
 
 
-;; Scala
-(use-package scala-mode
-  :interpreter ("scala" . scala-mode))
+(use-package scala-ts-mode
+  :interpreter ("scala" . scala-ts-mode)
+  :custom (treesit-font-lock-level 4))
 
 (use-package sbt-mode
   :commands sbt-start sbt-command
@@ -182,10 +204,7 @@
   (substitute-key-definition
    'minibuffer-complete-word
    'self-insert-command
-   minibuffer-local-completion-map)
-   ;; sbt-supershell kills sbt-mode:  https://github.com/hvesalai/emacs-sbt-mode/issues/152
-  (setq sbt:program-options '("-Dsbt.supershell=false")))
-
+   minibuffer-local-completion-map))
 
 ;; Latex
 (use-package auctex
@@ -201,7 +220,7 @@
 
 (use-package pdf-tools
   :magic ("%PDF" . pdf-view-mode)
-  :config (pdf-tools-install :no-query))
+  :config (pdf-tools-install))
 
 ;; ---------- Custom ---------- ;;
 
@@ -223,8 +242,12 @@
       (mood-line-segment-misc-info) "  " (mood-line-segment-checker)
       "  " (mood-line-segment-process) "  " " ")))
  '(package-selected-packages
-   '(auctex consult corfu dracula-theme haskell-mode marginalia mood-line
-            orderless pdf-tools sbt-mode scala-mode vertico vterm))
+   '(auctex consult corfu dracula-theme haskell-ts-mode marginalia
+            mood-line nerd-icons-completion orderless pdf-tools
+            sbt-mode scala-ts-mode vertico vterm))
+ '(package-vc-selected-packages
+   '((eglot-booster :vc-backend Git :url
+                    "https://github.com/jdtsmith/eglot-booster")))
  '(tool-bar-mode nil))
 
 (custom-set-faces
