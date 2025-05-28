@@ -173,7 +173,9 @@
   :config  
   (add-to-list 'eglot-server-programs
                `((scala-mode scala-ts-mode)
-                 . ,(alist-get 'scala-mode eglot-server-programs)))) ; this lets eglot recognize scala somehow
+                 . ,(alist-get 'scala-mode eglot-server-programs))) ; this lets eglot recognize scala somehow
+  :custom
+  (eglot-autoshutdown t))
 
 ;; Haskell
 ;; (use-package haskell-mode
@@ -248,9 +250,6 @@
    '(auctex consult corfu dracula-theme haskell-ts-mode marginalia
             mood-line nerd-icons-completion orderless pdf-tools
             sbt-mode scala-repl scala-ts-mode vertico vterm))
- '(package-vc-selected-packages
-   '((eglot-booster :vc-backend Git :url
-                    "https://github.com/jdtsmith/eglot-booster")))
  '(tool-bar-mode nil))
 
 (custom-set-faces
@@ -258,7 +257,7 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(default ((t (:family "Meslo LG S" :foundry "nil" :slant normal :weight regular :height 130 :width normal)))))
+ '(default ((t (:family "Meslo LG S" :foundry "nil" :slant normal :weight regular :height 140 :width normal)))))
 
 
 ;; ---------- End ---------- ;;
