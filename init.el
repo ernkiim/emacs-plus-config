@@ -70,6 +70,9 @@
    (after-init . (lambda () (select-frame-set-input-focus (selected-frame))))
    (server-after-make-frame . (lambda () (select-frame-set-input-focus (selected-frame))))))
 
+(use-package dired
+  :custom ((dired-kill-when-opening-new-dired-buffer t)))
+
 (use-package savehist
   :hook after-init)
 
@@ -109,7 +112,7 @@
   (("M-g g"   . consult-goto-line)
    ("M-g M-g" . consult-goto-line)
    ("M-y"     . consult-yank-pop)
-   ("s-l"     . consult-line)
+   ("s-s"     . consult-line)
    ("C-x b"   . consult-buffer)
    ("C-x C-b" . consult-buffer))
   :hook (completion-list-mode . consult-preview-at-point-mode))
@@ -159,8 +162,8 @@
 
 (use-package vterm
   :bind
-  (("M-s-t" . vterm)
-   ("M-s-T" . vterm-other-window)))
+  (("s-t" . vterm)
+   ("M-s-t" . vterm-other-window)))
 
 ;; (use-package multi-vterm
 ;;   :after vterm
@@ -225,7 +228,11 @@
 
 (use-package pdf-tools
   :magic ("%PDF" . pdf-view-mode)
-  :config (pdf-tools-install))
+  :config (pdf-tools-install)
+  :custom
+  ((pdf-view-resize-factor 1.1)
+   (pdf-view-display-size 'fit-page)))
+
 
 ;; ---------- Custom ---------- ;;
 
