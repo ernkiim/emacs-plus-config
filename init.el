@@ -96,7 +96,7 @@
 (use-package dracula-theme)
 
 
-;; ---------- Marginalia, Vertico, Consult ---------- ;;
+;; ---------- Vert&co (and corfu) ---------- ;;
 
 (use-package marginalia
   :hook after-init)
@@ -112,7 +112,7 @@
   (("M-g g"   . consult-goto-line)
    ("M-g M-g" . consult-goto-line)
    ("M-y"     . consult-yank-pop)
-   ("s-s"     . consult-line)
+   ("s-l"     . consult-line)
    ("C-x b"   . consult-buffer)
    ("C-x C-b" . consult-buffer))
   :hook (completion-list-mode . consult-preview-at-point-mode))
