@@ -32,7 +32,6 @@
 ;; Misc. preferences
 (use-package emacs
   :bind (("M-o"   . 'other-window)
-         ("C-s-w" .'kill-buffer-and-window)
          ;; Momentum can trigger scroll wheel bindings
          ("C-<wheel-up>"   . nil)
          ("C-<wheel-down>" . nil))
@@ -71,7 +70,7 @@
    (server-after-make-frame . (lambda () (select-frame-set-input-focus (selected-frame))))))
 
 (use-package dired
-  :custom ((dired-kill-when-opening-new-dired-buffer t)))
+  :custom ((dired-kill-when-opening-new-dired-buffer t))) ; Navigation normally opens a new buffer for every file traversed
 
 (use-package savehist
   :hook after-init)
@@ -180,9 +179,6 @@
   :custom
   (eglot-autoshutdown t))
 
-;; Haskell
-;; (use-package haskell-mode
-;;   :mode "\\.hs$")
 (use-package haskell-ts-mode
   :mode "\\.hs$"
   :custom
