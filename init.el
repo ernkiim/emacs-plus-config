@@ -24,10 +24,6 @@
 
 ;; ---------- Preferences ---------- ;;
 
-;; (set-face-attribute 'default nil
-;;                     :family "Meslo LG S"
-;;                     :height 180)
-
 ;; Much faster than doom-modeline
 (use-package mood-line
   :init (mood-line-mode +1)
@@ -48,7 +44,7 @@
   (mouse-wheel-tilt-scroll t)
   (mouse-wheel-flip-direction t)
   ;; Defer prog hook
-;;  (initial-major-mode 'fundamental-mode)
+  (initial-major-mode 'fundamental-mode)
   ;; Helps performance apparently
   (inhibit-compacting-font-caches t)
   ;; Silence
