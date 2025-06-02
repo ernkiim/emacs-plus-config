@@ -28,8 +28,8 @@
 
 
 ;; Abnormal hook, passes created frame as argument
-;; Adding in early-init so that the functions run on the initial frame
-(add-hook after-make-frame-functions (select-frame-set-input-focus))
+;; Adding in early-init so that the functions run on initial frame
+(add-hook 'after-make-frame-functions 'select-frame-set-input-focus)
 
 ;; end
 (provide 'early-init)
