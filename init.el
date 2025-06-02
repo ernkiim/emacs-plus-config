@@ -24,6 +24,10 @@
 
 ;; ---------- Preferences ---------- ;;
 
+;; (set-face-attribute 'default nil
+;;                     :family "Meslo LG S"
+;;                     :height 180)
+
 ;; Much faster than doom-modeline
 (use-package mood-line
   :init (mood-line-mode +1)
@@ -31,7 +35,7 @@
 
 ;; Misc. preferences
 (use-package emacs
-  :bind (("M-o"   . 'other-window)
+  :bind (("M-o" . 'other-window)
          ;; Momentum can trigger scroll wheel bindings
          ("C-<wheel-up>"   . nil)
          ("C-<wheel-down>" . nil))
@@ -44,7 +48,7 @@
   (mouse-wheel-tilt-scroll t)
   (mouse-wheel-flip-direction t)
   ;; Defer prog hook
-  (initial-major-mode 'fundamental-mode)
+;;  (initial-major-mode 'fundamental-mode)
   ;; Helps performance apparently
   (inhibit-compacting-font-caches t)
   ;; Silence
@@ -58,16 +62,14 @@
   ;; Hide startup mess
   (inhibit-startup-screen t)
   (initial-scratch-message "")
-  ;; Suppress emacsclient "C-x 5 0" reminder
+  ;; Suppress emacsclient "C-x 5 0" and "C-x #" reminders
   (server-client-instructions nil)
   ;; 'y' instead of 'yes'
   (use-short-answers t)
   ;; This is pretty neat
   (show-paren-context-when-offscreen 'overlay) ; Emacs 29
   :hook
-  ((after-init . pixel-scroll-precision-mode)
-   (after-init . (lambda () (select-frame-set-input-focus (selected-frame))))
-   (server-after-make-frame . (lambda () (select-frame-set-input-focus (selected-frame))))))
+  ((after-init . pixel-scroll-precision-mode)))
 
 (use-package dired
   :custom ((dired-kill-when-opening-new-dired-buffer t))) ; Navigation normally opens a new buffer for every file traversed
@@ -254,13 +256,6 @@
             mood-line nerd-icons-completion orderless pdf-tools
             sbt-mode scala-repl scala-ts-mode vertico vterm))
  '(tool-bar-mode nil))
-
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(default ((t (:family "Meslo LG S" :foundry "nil" :slant normal :weight regular :height 140 :width normal)))))
 
 
 ;; ---------- End ---------- ;;
