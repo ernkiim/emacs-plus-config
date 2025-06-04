@@ -19,7 +19,7 @@
               '((height . 0.55)
                 (width . 0.45)
                 (left . 0.5)
-                (top . 0.35)
+                (top . 0.3)
                 (vertical-scroll-bars . nil)
                 (horizontal-scroll-bars . nil)
                 (menu-bar-lines . 0)

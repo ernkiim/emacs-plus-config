@@ -26,12 +26,14 @@
 
 ;; Much faster than doom-modeline
 (use-package mood-line
-:ensure t
   :init (mood-line-mode +1)
   :custom (mood-line-glyph-alist mood-line-glyphs-fira-code))
 
+;; Runs on first frame of emacs or emacsclient
+
 ;; Misc. preferences
 (use-package emacs
+  :defer nil
   :bind (("M-o" . other-window)
          ("C-<wheel-up>"   . nil)  ; Momentum can trigger scroll wheel bindings
          ("C-<wheel-down>" . nil))
@@ -45,8 +47,6 @@
   (mouse-wheel-flip-direction t)
   ;; Defer prog hook
   (initial-major-mode 'fundamental-mode)
-  ;; Helps performance apparently
-  (inhibit-compacting-font-caches t)
   ;; Silence
   (ring-bell-function 'ignore)
   ;; No line wrapping
@@ -54,7 +54,7 @@
   ;; Indent with spaces
   (indent-tabs-mode nil)
   ;; Suppress annoying little confirm windows
-  (use-file-dialog nil)
+  (use-dialog-box nil)
   ;; Hide startup mess
   (inhibit-startup-screen t)
   (initial-scratch-message "")
@@ -65,7 +65,10 @@
   ;; This is pretty neat
   (show-paren-context-when-offscreen 'overlay) ; Emacs 29
   :hook
-  ((after-init . pixel-scroll-precision-mode)))
+  ((after-init . pixel-scroll-precision-mode)
+   (after-init . (lambda () (define-key input-decode-map (kbd "C-i") (kbd "H-i"))))
+   (server-after-make-frame . (lambda () (define-key input-decode-map (kbd "C-i") (kbd "H-i"))))))
+
 
 (use-package dired
   ;; Navigation normally opens a new buffer for every file traversed, want to kill as we go
@@ -74,13 +77,8 @@
 (use-package savehist
   :hook after-init)
 
-(use-package isearch
-  :bind (:map isearch-mode-map (("C-p" . 'isearch-repeat-backward)
-                                ("C-n" . 'isearch-repeat-forward))))
-
 ;; Theme
 (use-package dracula-theme)
-
 
 
 ;; ---------- Vert&co (and corfu) ---------- ;;
@@ -150,23 +148,35 @@
 
 (defconst homerow
   '(?a ?r ?s ?t ?n ?e ?i ?o) "colemak home row")
+
 ;; (use-package ace-window
 ;;   :custom
 ;;   (aw-keys homerow)
 ;;   (aw-dispatch-always nil)
 ;;   :bind ("M-o" . ace-window))
   
+
+
 (use-package avy
+  :load-path "~/.emacs.d/ernkiim-avy"
   :custom
   (avy-keys homerow)
   (avy-background t)
-  (avy-highlight-first t)
+  (avy-dispatch-alist
+   '((?x . avy-action-kill-move)
+     (?X . avy-action-kill-stay)
+     (?g . avy-action-teleport)
+     (?m . avy-action-mark)
+     (?c . avy-action-copy)
+     (?y . avy-action-yank)
+     (?Y . avy-action-yank-line)
+     (?i . avy-action-ispell)
+     (?z . avy-action-zap-to-char)))
   :custom-face
   (avy-background-face ((t :inherit shadow)))
   :bind
-  (("M-s" . avy-goto-char-2)
-   :map isearch-mode-map ("M-s" . avy-isearch)))
-
+  (("H-i" . avy-goto-char-2) ; C-i
+   :map isearch-mode-map ("H-i" . avy-isearch)))
 
 
 ;; ---------- Terminal Emulator ---------- ;;
@@ -213,6 +223,7 @@
 
 ;; Agda 2.7.0.1
 ;; Recompile if reinstalling agda-mode
+;; Remove warning suppress from custom when lexical binding fixed
 (load-file (let ((coding-system-for-read 'utf-8))
                 (shell-command-to-string "agda-mode locate")))
 
@@ -267,20 +278,24 @@
    '("4acfb4e3d5e86206c4c3a834f4a9356beb25dc04c48e4e364006eff5625606ab"
      default))
  '(mood-line-format
-   '(((concat (propertize " " 'display '(raise 0.25))
-              (propertize " " 'display '(raise -0.25)))
-      (mood-line-segment-modal) " "
-      (or (mood-line-segment-buffer-status) " ") " "
+   '(((propertize " " 'display '(raise -0.25)) (mood-line-segment-modal)
+      " " (or (mood-line-segment-buffer-status) " ")
+      (propertize " " 'display '(raise 0.25))
       (mood-line-segment-buffer-name) "  " (mood-line-segment-anzu)
-      "  " (mood-line-segment-multiple-cursors) "  " " " "")
+      "  " (mood-line-segment-multiple-cursors) "")
      ((mood-line-segment-vc) "  " (mood-line-segment-major-mode) "  "
       (mood-line-segment-misc-info) "  " (mood-line-segment-checker)
-      "  " (mood-line-segment-process) "  " " ")))
+      "  " (mood-line-segment-process) " ")))
  '(package-selected-packages
    '(auctex consult corfu dracula-theme haskell-ts-mode marginalia
             mood-line nerd-icons-completion orderless pdf-tools
             sbt-mode scala-repl scala-ts-mode vertico vterm))
- '(tool-bar-mode nil))
+ '(tool-bar-mode nil)
+ '(warning-suppress-types
+   '((files missing-lexbind-cookie
+            "~/.cabal/store/ghc-9.6.7/Agd-2.7.0.1-3c651abb/share/emacs-mode/agda2.el")
+     (files missing-lexbind-cookie
+            "~/.cabal/store/ghc-9.6.7/Agd-2.7.0.1-3c651abb/share/emacs-mode/agda2.el"))))
 
 ;;; init.el ends here
 (custom-set-faces
