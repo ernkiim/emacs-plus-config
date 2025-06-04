@@ -26,14 +26,14 @@
 
 ;; Much faster than doom-modeline
 (use-package mood-line
+:ensure t
   :init (mood-line-mode +1)
   :custom (mood-line-glyph-alist mood-line-glyphs-fira-code))
 
 ;; Misc. preferences
 (use-package emacs
-  :bind (("M-o" . 'other-window)
-         ;; Momentum can trigger scroll wheel bindings
-         ("C-<wheel-up>"   . nil)
+  :bind (("M-o" . other-window)
+         ("C-<wheel-up>"   . nil)  ; Momentum can trigger scroll wheel bindings
          ("C-<wheel-down>" . nil))
   :config
   ;; Hack startup message
@@ -68,29 +68,19 @@
   ((after-init . pixel-scroll-precision-mode)))
 
 (use-package dired
-  :custom ((dired-kill-when-opening-new-dired-buffer t))) ; Navigation normally opens a new buffer for every file traversed
+  ;; Navigation normally opens a new buffer for every file traversed, want to kill as we go
+  :custom ((dired-kill-when-opening-new-dired-buffer t)))
 
 (use-package savehist
   :hook after-init)
 
-;; ;; Navigate windows with number keys
-;; Not compatible with mood line out of the box
-;; (use-package winum
-;;   :hook before-init
-;;   :bind (("s-0" . 'winum-select-window-0-or-10)
-;;          ("s-1" . 'winum-select-window-1)
-;;          ("s-2" . 'winum-select-window-2)
-;;          ("s-3" . 'winum-select-window-3)
-;;          ("s-4" . 'winum-select-window-4)
-;;          ("s-5" . 'winum-select-window-5)
-;;          ("s-6" . 'winum-select-window-6)
-;;          ("s-7" . 'winum-select-window-7)
-;;          ("s-8" . 'winum-select-window-8)
-;;          ("s-9" . 'winum-select-window-9))
-;;   :custom (winum-mode +1))
+(use-package isearch
+  :bind (:map isearch-mode-map (("C-p" . 'isearch-repeat-backward)
+                                ("C-n" . 'isearch-repeat-forward))))
 
 ;; Theme
 (use-package dracula-theme)
+
 
 
 ;; ---------- Vert&co (and corfu) ---------- ;;
@@ -109,7 +99,7 @@
   (("M-g g"   . consult-goto-line)
    ("M-g M-g" . consult-goto-line)
    ("M-y"     . consult-yank-pop)
-   ("s-l"     . consult-line)
+   ("s-f"     . consult-line)
    ("C-x b"   . consult-buffer)
    ("C-x C-b" . consult-buffer))
   :hook (completion-list-mode . consult-preview-at-point-mode))
@@ -155,18 +145,46 @@
   (corfu-history-mode)
   (corfu-popupinfo-mode)) ; Popup completion info
 
+
+;; ---------- Abo-abo ---------- ;;
+
+(defconst homerow
+  '(?a ?r ?s ?t ?n ?e ?i ?o) "colemak home row")
+;; (use-package ace-window
+;;   :custom
+;;   (aw-keys homerow)
+;;   (aw-dispatch-always nil)
+;;   :bind ("M-o" . ace-window))
+  
+(use-package avy
+  :custom
+  (avy-keys homerow)
+  (avy-background t)
+  (avy-highlight-first t)
+  :custom-face
+  (avy-background-face ((t :inherit shadow)))
+  :bind
+  (("M-s" . avy-goto-char-2)
+   :map isearch-mode-map ("M-s" . avy-isearch)))
+
+
+
 ;; ---------- Terminal Emulator ---------- ;;
 
 (use-package vterm
   :bind
   (("s-t" . vterm)
-   ("M-s-t" . vterm-other-window)))
+   ("M-s-t" . vterm-other-window))
+  :custom
+  (vterm-clear-scrollback-when-clearing t))
 
 ;; (use-package multi-vterm
 ;;   :after vterm
 ;;   )
 
 ;; ---------- Programming modes ---------- ;;
+
+;; LSP
 (use-package eglot
   :hook ((scala-ts-mode . eglot-ensure)
          (haskell-ts-mode . eglot-ensure))
@@ -177,6 +195,8 @@
   :custom
   (eglot-autoshutdown t))
 
+
+;; Haskell
 (use-package haskell-ts-mode
   :mode "\\.hs$"
   :custom
@@ -191,6 +211,12 @@
    (treesit-install-language-grammar 'haskell)))
 
 
+;; Agda 2.7.0.1
+;; Recompile if reinstalling agda-mode
+(load-file (let ((coding-system-for-read 'utf-8))
+                (shell-command-to-string "agda-mode locate")))
+
+;; Scala
 (use-package scala-ts-mode
   :interpreter ("scala" . scala-ts-mode)
   :custom (treesit-font-lock-level 4))
@@ -207,6 +233,7 @@
 
 (use-package scala-repl
   :commands scala-repl-run)
+
 
 ;; Latex
 (use-package auctex
@@ -240,7 +267,9 @@
    '("4acfb4e3d5e86206c4c3a834f4a9356beb25dc04c48e4e364006eff5625606ab"
      default))
  '(mood-line-format
-   '((" " (mood-line-segment-modal) " "
+   '(((concat (propertize " " 'display '(raise 0.25))
+              (propertize " " 'display '(raise -0.25)))
+      (mood-line-segment-modal) " "
       (or (mood-line-segment-buffer-status) " ") " "
       (mood-line-segment-buffer-name) "  " (mood-line-segment-anzu)
       "  " (mood-line-segment-multiple-cursors) "  " " " "")
@@ -253,6 +282,13 @@
             sbt-mode scala-repl scala-ts-mode vertico vterm))
  '(tool-bar-mode nil))
 
+;;; init.el ends here
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
 
 ;; ---------- End ---------- ;;
 
@@ -260,5 +296,3 @@
       gc-cons-percentage 0.5)
 
 (provide 'init)
-
-;;; init.el ends here
