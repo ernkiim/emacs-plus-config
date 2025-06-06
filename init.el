@@ -147,7 +147,7 @@
 ;; ---------- Abo-abo ---------- ;;
 
 (defconst homerow
-  '(?a ?r ?s ?t ?n ?e ?i ?o) "colemak home row")
+  '(?n ?t ?e ?s ?i ?r ?o ?a))
 
 ;; (use-package ace-window
 ;;   :custom
@@ -156,9 +156,9 @@
 ;;   :bind ("M-o" . ace-window))
   
 
-
 (use-package avy
-  :load-path "~/.emacs.d/ernkiim-avy"
+  :config
+  (add-to-list 'avy-orders-alist '(avy-goto-char-2 . avy-order-closest))
   :custom
   (avy-keys homerow)
   (avy-background t)
@@ -170,7 +170,6 @@
      (?c . avy-action-copy)
      (?y . avy-action-yank)
      (?Y . avy-action-yank-line)
-     (?i . avy-action-ispell)
      (?z . avy-action-zap-to-char)))
   :custom-face
   (avy-background-face ((t :inherit shadow)))
@@ -287,7 +286,7 @@
       (mood-line-segment-misc-info) "  " (mood-line-segment-checker)
       "  " (mood-line-segment-process) " ")))
  '(package-selected-packages
-   '(auctex consult corfu dracula-theme haskell-ts-mode marginalia
+   '(auctex avy consult corfu dracula-theme haskell-ts-mode marginalia
             mood-line nerd-icons-completion orderless pdf-tools
             sbt-mode scala-repl scala-ts-mode vertico vterm))
  '(tool-bar-mode nil)
