@@ -24,16 +24,8 @@
 
 ;; ---------- Preferences ---------- ;;
 
-;; Much faster than doom-modeline
-(use-package mood-line
-  :init (mood-line-mode +1)
-  :custom (mood-line-glyph-alist mood-line-glyphs-fira-code))
-
-;; Runs on first frame of emacs or emacsclient
-
 ;; Misc. preferences
 (use-package emacs
-  :defer nil
   :bind (("M-o" . other-window)
          ("C-<wheel-up>"   . nil)  ; Momentum can trigger scroll wheel bindings
          ("C-<wheel-down>" . nil))
@@ -41,6 +33,10 @@
   ;; Hack startup message
   (defun display-startup-echo-area-message ()
     (message ""))
+  ;; Delete files into trash bin (when using dired, etc.)
+  (setq delete-by-moving-to-trash t)
+  (if (eq system-type 'darwin)
+      (setq trash-directory "~/.Trash"))
   :custom
   ;; Horizontal scrolling (in macos direction)
   (mouse-wheel-tilt-scroll t)
@@ -65,20 +61,46 @@
   ;; This is pretty neat
   (show-paren-context-when-offscreen 'overlay) ; Emacs 29
   :hook
-  ((after-init . pixel-scroll-precision-mode)
+  ((after-init . savehist-mode)
+   (after-init . pixel-scroll-precision-mode)
    (after-init . (lambda () (define-key input-decode-map (kbd "C-i") (kbd "H-i"))))
    (server-after-make-frame . (lambda () (define-key input-decode-map (kbd "C-i") (kbd "H-i"))))))
 
-
-(use-package dired
-  ;; Navigation normally opens a new buffer for every file traversed, want to kill as we go
-  :custom ((dired-kill-when-opening-new-dired-buffer t)))
-
-(use-package savehist
+(use-package electric-pair-mode
   :hook after-init)
 
+;; Scroll half page
+(use-package view
+  :bind
+  (("C-v" . View-scroll-half-page-forward)
+   ("M-v" . View-scroll-half-page-backward)))
+
+;; Much faster than doom-modeline
+(use-package mood-line
+  :init (mood-line-mode +1)
+  :custom (mood-line-glyph-alist mood-line-glyphs-fira-code))
+
+;; Padding
+(use-package spacious-padding
+  :hook after-init
+  :custom
+  (spacious-padding-subtle-mode-line
+   '(:mode-line-inactive (face-attribute 'default :background))))
+
 ;; Theme
-(use-package dracula-theme)
+;;(use-package solarized-theme)
+
+
+;; ---------- Dired ---------- ;;
+
+(use-package dired
+  :defer t
+  ;; Navigation normally opens a new buffer for every file traversed, want to kill as we go
+  :custom
+  (dired-kill-when-opening-new-dired-buffer t))
+
+(use-package nerd-icons-dired
+  :hook (dired-mode . nerd-icons-dired-mode))
 
 
 ;; ---------- Vert&co (and corfu) ---------- ;;
@@ -94,7 +116,8 @@
 
 (use-package consult
   :bind
-  (("M-g g"   . consult-goto-line)
+  (("s-l"     . consult-goto-line)
+   ("M-g g"   . consult-goto-line)
    ("M-g M-g" . consult-goto-line)
    ("M-y"     . consult-yank-pop)
    ("s-f"     . consult-line)
@@ -107,6 +130,10 @@
   :hook after-init
   :custom (vertico-cycle t))
 
+(use-package vertico-posframe
+  :hook vertico-mode)
+
+
 (use-package orderless
   :custom
   (completion-styles '(orderless
@@ -117,31 +144,29 @@
   (completion-category-defaults nil)
   (completion-category-overrides '((file (styles basic partial-completion)))))
 
+
 ;; Corfu completion
 
 (use-package corfu
   :custom
-  (corfu-cycle t)                 ; Allows cycling through candidates
-  (corfu-auto t)                  ; Enable auto completion
+  (corfu-cycle t)
+  (corfu-auto t)
   (corfu-auto-prefix 2)
   (corfu-auto-delay 0.1)
   (corfu-popupinfo-delay '(0.5 . 0.2))
-  (corfu-preview-current 'insert) ; insert previewed candidate
+  (corfu-preview-current 'insert)
   (corfu-preselect 'prompt)
   (corfu-on-exact-match nil)      ; Don't auto expand tempel snippets
   ;; Optionally use TAB for cycling, default is `corfu-complete'.
   :bind (:map corfu-map
               ("M-SPC"      . corfu-insert-separator)
-              ("TAB"        . corfu-next)
-              ([tab]        . corfu-next)
-              ("S-TAB"      . corfu-previous)
-              ([backtab]    . corfu-previous)
-              ("S-<return>" . corfu-insert)
+              ("C-<return>" . corfu-insert)
               ("RET"        . nil))
   :init
   (global-corfu-mode)
   (corfu-history-mode)
   (corfu-popupinfo-mode)) ; Popup completion info
+
 
 
 ;; ---------- Abo-abo ---------- ;;
@@ -154,16 +179,26 @@
 ;;   (aw-keys homerow)
 ;;   (aw-dispatch-always nil)
 ;;   :bind ("M-o" . ace-window))
-  
 
-(use-package avy
+
+(use-package avy                        
   :config
   (add-to-list 'avy-orders-alist '(avy-goto-char-2 . avy-order-closest))
+  (defun avy-action-comment-line-stay (pt)
+    "Comment line at PT, return to current"
+    (save-excursion
+      (goto-char pt)
+      (comment-line 1))
+    (select-window
+     (cdr
+      (ring-ref avy-ring 0))))
   :custom
   (avy-keys homerow)
   (avy-background t)
+  (avy-single-candidate-jump nil)
   (avy-dispatch-alist
-   '((?x . avy-action-kill-move)
+   '((?\; . avy-action-comment-line-stay)
+     (?x . avy-action-kill-move)
      (?X . avy-action-kill-stay)
      (?g . avy-action-teleport)
      (?m . avy-action-mark)
@@ -197,7 +232,7 @@
 (use-package eglot
   :hook ((scala-ts-mode . eglot-ensure)
          (haskell-ts-mode . eglot-ensure))
-  :config  
+  :config
   (add-to-list 'eglot-server-programs
                `((scala-mode scala-ts-mode)
                  . ,(alist-get 'scala-mode eglot-server-programs))) ; this lets eglot recognize scala somehow
@@ -224,7 +259,7 @@
 ;; Recompile if reinstalling agda-mode
 ;; Remove warning suppress from custom when lexical binding fixed
 (load-file (let ((coding-system-for-read 'utf-8))
-                (shell-command-to-string "agda-mode locate")))
+             (shell-command-to-string "agda-mode locate")))
 
 ;; Scala
 (use-package scala-ts-mode
@@ -249,8 +284,7 @@
 (use-package auctex
   :commands latex-mode
   :config
-  (add-hook 'TeX-after-compilation-finished-functions
-            #'TeX-revert-document-buffer)
+  (add-hook 'TeX-after-compilation-finished-functions #'TeX-revert-document-buffer)
   :custom
   (TeX-view-program-selection '((output-pdf "PDF Tools")))
   (TeX-view-program-list '(("PDF Tools" TeX-pdf-tools-sync-view)))
@@ -274,21 +308,33 @@
  ;; If there is more than one, they won't work right.
  '(custom-enabled-themes '(dracula))
  '(custom-safe-themes
-   '("4acfb4e3d5e86206c4c3a834f4a9356beb25dc04c48e4e364006eff5625606ab"
+   '("7f1d414afda803f3244c6fb4c2c64bea44dac040ed3731ec9d75275b9e831fe5"
+     "36d4b9573ed57b3c53261cb517eef2353058b7cf95b957f691f5ad066933ae84"
+     "51ec7bfa54adf5fff5d466248ea6431097f5a18224788d0bd7eb1257a4f7b773"
+     "830877f4aab227556548dc0a28bf395d0abe0e3a0ab95455731c9ea5ab5fe4e1"
+     "57a29645c35ae5ce1660d5987d3da5869b048477a7801ce7ab57bfb25ce12d3e"
+     "833ddce3314a4e28411edf3c6efde468f6f2616fc31e17a62587d6a9255f4633"
+     "d89e15a34261019eec9072575d8a924185c27d3da64899905f8548cbd9491a36"
+     "7fea145741b3ca719ae45e6533ad1f49b2a43bf199d9afaee5b6135fd9e6f9b8"
+     "b49f66a2e1724db880692485a5d5bcb9baf28ed2a3a05c7a799fa091f24321da"
+     "09b833239444ac3230f591e35e3c28a4d78f1556b107bafe0eb32b5977204d93"
+     "4acfb4e3d5e86206c4c3a834f4a9356beb25dc04c48e4e364006eff5625606ab"
      default))
  '(mood-line-format
-   '(((propertize " " 'display '(raise -0.25)) (mood-line-segment-modal)
-      " " (or (mood-line-segment-buffer-status) " ")
-      (propertize " " 'display '(raise 0.25))
+   '(("" (mood-line-segment-modal) " "
+      (or (mood-line-segment-buffer-status) " ") " "
       (mood-line-segment-buffer-name) "  " (mood-line-segment-anzu)
       "  " (mood-line-segment-multiple-cursors) "")
      ((mood-line-segment-vc) "  " (mood-line-segment-major-mode) "  "
       (mood-line-segment-misc-info) "  " (mood-line-segment-checker)
       "  " (mood-line-segment-process) " ")))
+ '(mood-line-mode t)
  '(package-selected-packages
    '(auctex avy consult corfu dracula-theme haskell-ts-mode marginalia
-            mood-line nerd-icons-completion orderless pdf-tools
-            sbt-mode scala-repl scala-ts-mode vertico vterm))
+            mood-line nerd-icons-completion nerd-icons-dired orderless
+            pdf-tools sbt-mode scala-repl scala-ts-mode
+            solarized-theme spacious-mode spacious-padding vertico
+            vertico-posframe vertico-quick vterm zenburn-theme))
  '(tool-bar-mode nil)
  '(warning-suppress-types
    '((files missing-lexbind-cookie
