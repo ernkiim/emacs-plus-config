@@ -8,7 +8,7 @@
 
 (require 'package)
 (add-to-list 'package-archives '("gnu"   . "https://elpa.gnu.org/packages/"))
-(add-to-list 'package-archives '("elpa"  . "https://elpa.gnu.org/packages/"))
+;; (add-to-list 'package-archives '("elpa"  . "https://elpa.gnu.org/packages/")) 
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
 (package-initialize)
 
@@ -38,6 +38,8 @@
   (if (eq system-type 'darwin)
       (setq trash-directory "~/.Trash"))
   :custom
+  ;; Thin line cursor (instead of box)
+  (cursor-type 'bar)
   ;; Horizontal scrolling (in macos direction)
   (mouse-wheel-tilt-scroll t)
   (mouse-wheel-flip-direction t)
@@ -63,8 +65,14 @@
   :hook
   ((after-init . savehist-mode)
    (after-init . pixel-scroll-precision-mode)
-   (after-init . (lambda () (define-key input-decode-map (kbd "C-i") (kbd "H-i"))))
-   (server-after-make-frame . (lambda () (define-key input-decode-map (kbd "C-i") (kbd "H-i"))))))
+   (after-init . (lambda ()
+                   (define-key input-decode-map
+                               (kbd "C-i")
+                               (kbd "H-i"))))
+   (server-after-make-frame . (lambda ()
+                                (define-key input-decode-map
+                                            (kbd "C-i")
+                                            (kbd "H-i"))))))
 
 (use-package electric-pair-mode
   :hook after-init)
@@ -81,20 +89,18 @@
   :custom (mood-line-glyph-alist mood-line-glyphs-fira-code))
 
 ;; Padding
+(setq color "blue")
 (use-package spacious-padding
   :hook after-init
   :custom
-  (spacious-padding-subtle-mode-line
-   '(:mode-line-inactive (face-attribute 'default :background))))
-
-;; Theme
-;;(use-package solarized-theme)
+  (spacious-padding-subtle-mode-line '(:mode-line-inactive shadow)))
 
 
 ;; ---------- Dired ---------- ;;
 
 (use-package dired
-  :defer t
+  :hook
+  (dired-mode . dired-hide-details-mode)
   ;; Navigation normally opens a new buffer for every file traversed, want to kill as we go
   :custom
   (dired-kill-when-opening-new-dired-buffer t))
@@ -111,7 +117,7 @@
 (use-package nerd-icons-completion
   :after marginalia
   :config
-  (nerd-icons-completion-mode)
+  (nerd-icons-completion-mode +1)
   (add-hook 'marginalia-mode-hook #'nerd-icons-completion-marginalia-setup))
 
 (use-package consult
@@ -184,20 +190,34 @@
 (use-package avy                        
   :config
   (add-to-list 'avy-orders-alist '(avy-goto-char-2 . avy-order-closest))
-  (defun avy-action-comment-line-stay (pt)
-    "Comment line at PT, return to current"
+
+  (defun avy-mk-stay-action (pt fn)
     (save-excursion
       (goto-char pt)
-      (comment-line 1))
+      (funcall fn))
     (select-window
      (cdr
       (ring-ref avy-ring 0))))
+  
+  (defun avy-action-comment-line-stay (pt)
+    (avy-mk-stay-action
+     pt
+     (lambda () (comment-line 1))))
+
+  (defun avy-action-comment-defun-stay (pt)
+    (avy-mk-stay-action
+     pt
+     (lambda ()
+       (mark-defun)
+       (comment-region (region-beginning) (region-end)))))
+  
   :custom
   (avy-keys homerow)
   (avy-background t)
   (avy-single-candidate-jump nil)
   (avy-dispatch-alist
    '((?\; . avy-action-comment-line-stay)
+     (?\: . avy-action-comment-defun-stay)
      (?x . avy-action-kill-move)
      (?X . avy-action-kill-stay)
      (?g . avy-action-teleport)
@@ -284,7 +304,8 @@
 (use-package auctex
   :commands latex-mode
   :config
-  (add-hook 'TeX-after-compilation-finished-functions #'TeX-revert-document-buffer)
+  (add-hook 'TeX-after-compilation-finished-functions
+            #'TeX-revert-document-buffer)
   :custom
   (TeX-view-program-selection '((output-pdf "PDF Tools")))
   (TeX-view-program-list '(("PDF Tools" TeX-pdf-tools-sync-view)))
@@ -292,11 +313,14 @@
   (TeX-save-query nil))
 
 (use-package pdf-tools
-  :magic ("%PDF" . pdf-view-mode)
-  :config (pdf-tools-install)
+  :magic
+  ("%PDF" . pdf-view-mode)
+  :config
+  (pdf-tools-install)
+  (add-to-list 'pdf-tools-enabled-modes 'pdf-view-themed-minor-mode)
   :custom
-  ((pdf-view-resize-factor 1.1)
-   (pdf-view-display-size 'fit-page)))
+  (pdf-view-resize-factor 1.1)
+  (pdf-view-display-size 'fit-page))
 
 
 ;; ---------- Custom ---------- ;;
@@ -332,9 +356,9 @@
  '(package-selected-packages
    '(auctex avy consult corfu dracula-theme haskell-ts-mode marginalia
             mood-line nerd-icons-completion nerd-icons-dired orderless
-            pdf-tools sbt-mode scala-repl scala-ts-mode
-            solarized-theme spacious-mode spacious-padding vertico
-            vertico-posframe vertico-quick vterm zenburn-theme))
+            pdf-tools sbt-mode scala-repl scala-ts-mode solaire
+            spacious-mode spacious-padding vertico vertico-posframe
+            vertico-quick vterm zenburn-theme))
  '(tool-bar-mode nil)
  '(warning-suppress-types
    '((files missing-lexbind-cookie
