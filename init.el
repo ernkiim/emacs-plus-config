@@ -8,7 +8,6 @@
 
 (require 'package)
 (add-to-list 'package-archives '("gnu"   . "https://elpa.gnu.org/packages/"))
-;; (add-to-list 'package-archives '("elpa"  . "https://elpa.gnu.org/packages/")) 
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
 (package-initialize)
 
@@ -24,12 +23,27 @@
 
 ;; ---------- Preferences ---------- ;;
 
+;; Padding
+(use-package spacious-padding
+  :hook after-init
+  :custom
+  (spacious-padding-subtle-mode-line nil) ; '(:mode-line-inactive "#282a36"))
+  (spacious-padding-widths '( :internal-border-width 12
+                              :header-line-width 4
+                              :mode-line-width 4
+                              :tab-width 4
+                              :right-divider-width 24
+                              :scroll-bar-width 8)))
+
 ;; Misc. preferences
 (use-package emacs
   :bind (("M-o" . other-window)
          ("C-<wheel-up>"   . nil)  ; Momentum can trigger scroll wheel bindings
-         ("C-<wheel-down>" . nil))
+         ("C-<wheel-down>" . nil)
+         ("C-." . scroll-up-line)
+         ("C-," . scroll-down-line))
   :config
+  (run-with-idle-timer 3 t (lambda () (message "")))
   ;; Hack startup message
   (defun display-startup-echo-area-message ()
     (message ""))
@@ -38,6 +52,10 @@
   (if (eq system-type 'darwin)
       (setq trash-directory "~/.Trash"))
   :custom
+  ;; Echo keystrokes as they are entered
+  (echo-keystrokes 0.01)
+  ;; Don't show C-h reminder text in echo box
+  (echo-keystrokes-help nil)
   ;; Thin line cursor (instead of box)
   (cursor-type 'bar)
   ;; Horizontal scrolling (in macos direction)
@@ -74,6 +92,7 @@
                                             (kbd "C-i")
                                             (kbd "H-i"))))))
 
+;; Auto pair balanced expressions.
 (use-package electric-pair-mode
   :hook after-init)
 
@@ -84,16 +103,10 @@
    ("M-v" . View-scroll-half-page-backward)))
 
 ;; Much faster than doom-modeline
-(use-package mood-line
-  :init (mood-line-mode +1)
+(use-package mood-line                  
+  :init
+  (mood-line-mode +1)
   :custom (mood-line-glyph-alist mood-line-glyphs-fira-code))
-
-;; Padding
-(setq color "blue")
-(use-package spacious-padding
-  :hook after-init
-  :custom
-  (spacious-padding-subtle-mode-line '(:mode-line-inactive shadow)))
 
 
 ;; ---------- Dired ---------- ;;
@@ -101,8 +114,8 @@
 (use-package dired
   :hook
   (dired-mode . dired-hide-details-mode)
-  ;; Navigation normally opens a new buffer for every file traversed, want to kill as we go
   :custom
+  ;; Keep only current file's dired buffer
   (dired-kill-when-opening-new-dired-buffer t))
 
 (use-package nerd-icons-dired
@@ -131,14 +144,12 @@
    ("C-x C-b" . consult-buffer))
   :hook (completion-list-mode . consult-preview-at-point-mode))
 
-
 (use-package vertico
   :hook after-init
   :custom (vertico-cycle t))
 
 (use-package vertico-posframe
   :hook vertico-mode)
-
 
 (use-package orderless
   :custom
@@ -149,9 +160,6 @@
 		       flex))
   (completion-category-defaults nil)
   (completion-category-overrides '((file (styles basic partial-completion)))))
-
-
-;; Corfu completion
 
 (use-package corfu
   :custom
@@ -259,7 +267,6 @@
   :custom
   (eglot-autoshutdown t))
 
-
 ;; Haskell
 (use-package haskell-ts-mode
   :mode "\\.hs$"
@@ -310,7 +317,9 @@
   (TeX-view-program-selection '((output-pdf "PDF Tools")))
   (TeX-view-program-list '(("PDF Tools" TeX-pdf-tools-sync-view)))
   (TeX-source-correlate-start-server t)
-  (TeX-save-query nil))
+  (TeX-save-query nil)
+  (TeX-electric-math '("\\(" . "\\)"))
+  (LaTeX-electric-left-right-brace t))
 
 (use-package pdf-tools
   :magic
@@ -332,7 +341,8 @@
  ;; If there is more than one, they won't work right.
  '(custom-enabled-themes '(dracula))
  '(custom-safe-themes
-   '("7f1d414afda803f3244c6fb4c2c64bea44dac040ed3731ec9d75275b9e831fe5"
+   '("2b0fcc7cc9be4c09ec5c75405260a85e41691abb1ee28d29fcd5521e4fca575b"
+     "7f1d414afda803f3244c6fb4c2c64bea44dac040ed3731ec9d75275b9e831fe5"
      "36d4b9573ed57b3c53261cb517eef2353058b7cf95b957f691f5ad066933ae84"
      "51ec7bfa54adf5fff5d466248ea6431097f5a18224788d0bd7eb1257a4f7b773"
      "830877f4aab227556548dc0a28bf395d0abe0e3a0ab95455731c9ea5ab5fe4e1"
@@ -345,20 +355,19 @@
      "4acfb4e3d5e86206c4c3a834f4a9356beb25dc04c48e4e364006eff5625606ab"
      default))
  '(mood-line-format
-   '(("" (mood-line-segment-modal) " "
+   '((" " (mood-line-segment-modal) " "
       (or (mood-line-segment-buffer-status) " ") " "
       (mood-line-segment-buffer-name) "  " (mood-line-segment-anzu)
-      "  " (mood-line-segment-multiple-cursors) "")
+      "  " (mood-line-segment-multiple-cursors) "  ")
      ((mood-line-segment-vc) "  " (mood-line-segment-major-mode) "  "
       (mood-line-segment-misc-info) "  " (mood-line-segment-checker)
-      "  " (mood-line-segment-process) " ")))
- '(mood-line-mode t)
+      "  " (mood-line-segment-process) "  " " ")))
  '(package-selected-packages
    '(auctex avy consult corfu dracula-theme haskell-ts-mode marginalia
             mood-line nerd-icons-completion nerd-icons-dired orderless
             pdf-tools sbt-mode scala-repl scala-ts-mode solaire
             spacious-mode spacious-padding vertico vertico-posframe
-            vertico-quick vterm zenburn-theme))
+            vertico-quick vterm))
  '(tool-bar-mode nil)
  '(warning-suppress-types
    '((files missing-lexbind-cookie

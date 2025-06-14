@@ -21,6 +21,7 @@
                 (width . 0.45)
                 (left . 0.5)
                 (top . 0.3)
+                ;; (internal-border-width . 10)
                 (vertical-scroll-bars . nil)
                 (horizontal-scroll-bars . nil)
                 (menu-bar-lines . 0)
@@ -29,8 +30,6 @@
 ;; Abnormal hook, passes created frame as argument
 ;; Adding in early-init so that the functions run on initial frame
 (add-hook 'after-make-frame-functions 'select-frame-set-input-focus)
-
-
 
 ;; end
 (provide 'early-init)
