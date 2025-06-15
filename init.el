@@ -23,26 +23,22 @@
 
 ;; ---------- Preferences ---------- ;;
 
-;; Padding
+;; ;; Padding
 (use-package spacious-padding
   :hook after-init
   :custom
-  (spacious-padding-subtle-mode-line nil) ; '(:mode-line-inactive "#282a36"))
-  (spacious-padding-widths '( :internal-border-width 12
+  (spacious-padding-subtle-mode-line '(:mode-line-inactive "#282a36"))
+  (spacious-padding-widths '( :internal-border-width 10
                               :header-line-width 4
                               :mode-line-width 4
                               :tab-width 4
-                              :right-divider-width 24
+                              :right-divider-width 20
                               :scroll-bar-width 8)))
 
 ;; Misc. preferences
 (use-package emacs
-  :bind (("M-o" . other-window)
-         ("C-<wheel-up>"   . nil)  ; Momentum can trigger scroll wheel bindings
-         ("C-<wheel-down>" . nil)
-         ("C-." . scroll-up-line)
-         ("C-," . scroll-down-line))
   :config
+  ;; Clear echo messages after delay
   (run-with-idle-timer 3 t (lambda () (message "")))
   ;; Hack startup message
   (defun display-startup-echo-area-message ()
@@ -50,7 +46,23 @@
   ;; Delete files into trash bin (when using dired, etc.)
   (setq delete-by-moving-to-trash t)
   (if (eq system-type 'darwin)
-      (setq trash-directory "~/.Trash"))
+      (setq trash-directory "~/.Trash"))	
+
+  ;; Load spotify_player integration
+  (load-file "~/.emacs.d/spotify-player.el")
+
+  :bind
+  (("M-o" . other-window)
+   ("C-<wheel-up>"   . nil)  ; Momentum can trigger scroll wheel bindings
+   ("C-<wheel-down>" . nil)
+   ("C-." . scroll-up-line)
+   ("C-," . scroll-down-line)
+   ;; Spotify bindings
+   ("C-c C-s"   . spotify)
+   ("C-c C-SPC" . spotify-pause-resume)
+   ("C-c C-n"   . spotify-next)
+   ("C-c C-p"   . spotify-prev))
+
   :custom
   ;; Echo keystrokes as they are entered
   (echo-keystrokes 0.01)
@@ -63,6 +75,8 @@
   (mouse-wheel-flip-direction t)
   ;; Defer prog hook
   (initial-major-mode 'fundamental-mode)
+  ;; Vterm on startup
+  (initial-buffer-choice 'vterm)
   ;; Silence
   (ring-bell-function 'ignore)
   ;; No line wrapping
@@ -81,7 +95,8 @@
   ;; This is pretty neat
   (show-paren-context-when-offscreen 'overlay) ; Emacs 29
   :hook
-  ((after-init . savehist-mode)
+  ((after-init . spotify-init)
+   (after-init . savehist-mode)
    (after-init . pixel-scroll-precision-mode)
    (after-init . (lambda ()
                    (define-key input-decode-map
@@ -91,6 +106,10 @@
                                 (define-key input-decode-map
                                             (kbd "C-i")
                                             (kbd "H-i"))))))
+
+;; Hide mode line on scratch (also hides spacious-padding artifact)
+(use-package hide-mode-line
+  :hook vterm-mode)
 
 ;; Auto pair balanced expressions.
 (use-package electric-pair-mode
@@ -249,6 +268,7 @@
 ;; ---------- Terminal Emulator ---------- ;;
 
 (use-package vterm
+  :commands vterm-mode
   :bind
   (("s-t" . vterm)
    ("M-s-t" . vterm-other-window)
@@ -256,9 +276,6 @@
   :custom
   (vterm-clear-scrollback-when-clearing t))
 
-;; (use-package multi-vterm
-;;   :after vterm
-;;   )
 
 ;; ---------- Programming modes ---------- ;;
 
@@ -288,11 +305,10 @@
    (treesit-install-language-grammar 'haskell)))
 
 
-;; Agda 2.7.0.1
-;; Recompile if reinstalling agda-mode
-;; Remove warning suppress from custom when lexical binding fixed
-(load-file (let ((coding-system-for-read 'utf-8))
-             (shell-command-to-string "agda-mode locate")))
+;; ;; Agda 2.7.0.1
+;; ;; Recompile if reinstalling agda-mode
+;; (load-file (let ((coding-system-for-read 'utf-8))
+;;              (shell-command-to-string "agda-mode locate")))
 
 ;; Scala
 (use-package scala-ts-mode
@@ -347,18 +363,7 @@
  ;; If there is more than one, they won't work right.
  '(custom-enabled-themes '(dracula))
  '(custom-safe-themes
-   '("2b0fcc7cc9be4c09ec5c75405260a85e41691abb1ee28d29fcd5521e4fca575b"
-     "7f1d414afda803f3244c6fb4c2c64bea44dac040ed3731ec9d75275b9e831fe5"
-     "36d4b9573ed57b3c53261cb517eef2353058b7cf95b957f691f5ad066933ae84"
-     "51ec7bfa54adf5fff5d466248ea6431097f5a18224788d0bd7eb1257a4f7b773"
-     "830877f4aab227556548dc0a28bf395d0abe0e3a0ab95455731c9ea5ab5fe4e1"
-     "57a29645c35ae5ce1660d5987d3da5869b048477a7801ce7ab57bfb25ce12d3e"
-     "833ddce3314a4e28411edf3c6efde468f6f2616fc31e17a62587d6a9255f4633"
-     "d89e15a34261019eec9072575d8a924185c27d3da64899905f8548cbd9491a36"
-     "7fea145741b3ca719ae45e6533ad1f49b2a43bf199d9afaee5b6135fd9e6f9b8"
-     "b49f66a2e1724db880692485a5d5bcb9baf28ed2a3a05c7a799fa091f24321da"
-     "09b833239444ac3230f591e35e3c28a4d78f1556b107bafe0eb32b5977204d93"
-     "4acfb4e3d5e86206c4c3a834f4a9356beb25dc04c48e4e364006eff5625606ab"
+   '("4acfb4e3d5e86206c4c3a834f4a9356beb25dc04c48e4e364006eff5625606ab"
      default))
  '(mood-line-format
    '((" " (mood-line-segment-modal) " "
@@ -369,17 +374,12 @@
       (mood-line-segment-misc-info) "  " (mood-line-segment-checker)
       "  " (mood-line-segment-process) "  " " ")))
  '(package-selected-packages
-   '(auctex avy consult corfu dracula-theme haskell-ts-mode marginalia
-            mood-line nerd-icons-completion nerd-icons-dired orderless
-            pdf-tools sbt-mode scala-repl scala-ts-mode solaire
-            spacious-mode spacious-padding typit vertico
-            vertico-posframe vertico-quick vterm))
- '(tool-bar-mode nil)
- '(warning-suppress-types
-   '((files missing-lexbind-cookie
-            "~/.cabal/store/ghc-9.6.7/Agd-2.7.0.1-3c651abb/share/emacs-mode/agda2.el")
-     (files missing-lexbind-cookie
-            "~/.cabal/store/ghc-9.6.7/Agd-2.7.0.1-3c651abb/share/emacs-mode/agda2.el"))))
+   '(auctex avy consult corfu dracula-theme haskell-ts-mode
+            hide-mode-line marginalia mood-line nerd-icons-completion
+            nerd-icons-dired orderless pdf-tools sbt-mode scala-repl
+            scala-ts-mode solaire spacious-mode spacious-padding typit
+            vertico vertico-posframe vertico-quick vterm))
+ '(tool-bar-mode nil))
 
 ;;; init.el ends here
 (custom-set-faces
@@ -395,3 +395,51 @@
       gc-cons-percentage 0.5)
 
 (provide 'init)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
