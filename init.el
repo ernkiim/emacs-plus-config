@@ -109,6 +109,11 @@
   :custom (mood-line-glyph-alist mood-line-glyphs-fira-code))
 
 
+;; ---------- Typing ---------- ;;
+
+(use-package typit
+  :defer t)
+
 ;; ---------- Dired ---------- ;;
 
 (use-package dired
@@ -246,7 +251,8 @@
 (use-package vterm
   :bind
   (("s-t" . vterm)
-   ("M-s-t" . vterm-other-window))
+   ("M-s-t" . vterm-other-window)
+   (:map vterm-mode-map ("C-y" . vterm-yank)))
   :custom
   (vterm-clear-scrollback-when-clearing t))
 
@@ -366,8 +372,8 @@
    '(auctex avy consult corfu dracula-theme haskell-ts-mode marginalia
             mood-line nerd-icons-completion nerd-icons-dired orderless
             pdf-tools sbt-mode scala-repl scala-ts-mode solaire
-            spacious-mode spacious-padding vertico vertico-posframe
-            vertico-quick vterm))
+            spacious-mode spacious-padding typit vertico
+            vertico-posframe vertico-quick vterm))
  '(tool-bar-mode nil)
  '(warning-suppress-types
    '((files missing-lexbind-cookie
