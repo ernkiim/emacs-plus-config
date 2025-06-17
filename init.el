@@ -75,7 +75,6 @@
   (mouse-wheel-flip-direction t)
   ;; Defer prog hook
   (initial-major-mode 'fundamental-mode)
-  ;; Vterm on startup
   (initial-buffer-choice 'vterm)
   ;; Silence
   (ring-bell-function 'ignore)
@@ -95,7 +94,7 @@
   ;; This is pretty neat
   (show-paren-context-when-offscreen 'overlay) ; Emacs 29
   :hook
-  ((after-init . spotify-init)
+  ((after-init . spotify-init) ; start dedicated "spotify" vterm buffer
    (after-init . savehist-mode)
    (after-init . pixel-scroll-precision-mode)
    (after-init . (lambda ()
@@ -109,7 +108,9 @@
 
 ;; Hide mode line on scratch (also hides spacious-padding artifact)
 (use-package hide-mode-line
-  :hook vterm-mode)
+  :hook
+  (vterm-mode
+   pdf-view-mode))
 
 ;; Auto pair balanced expressions.
 (use-package electric-pair-mode
@@ -274,7 +275,8 @@
    ("M-s-t" . vterm-other-window)
    (:map vterm-mode-map ("C-y" . vterm-yank)))
   :custom
-  (vterm-clear-scrollback-when-clearing t))
+  (vterm-clear-scrollback-when-clearing t)
+  (vterm-min-window-width 60))
 
 
 ;; ---------- Programming modes ---------- ;;

@@ -17,8 +17,8 @@
               default-frame-alist
               '((ns-frame-appearance . dark)
                 (ns-transparent-titlebar . t)
-                (height . 0.55)
-                (width . 0.45)
+                (height . 0.45)
+                (width . 0.4)
                 (left . 0.5)
                 (top . 0.3)
                 ;; (internal-border-width . 10)
