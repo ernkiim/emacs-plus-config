@@ -134,6 +134,13 @@
 (use-package typit
   :defer t)
 
+
+;; ---------- Magit ---------- ;;
+
+(use-package magit
+  :ensure t)
+
+
 ;; ---------- Dired ---------- ;;
 
 (use-package dired
@@ -377,10 +384,11 @@
       "  " (mood-line-segment-process) "  " " ")))
  '(package-selected-packages
    '(auctex avy consult corfu dracula-theme haskell-ts-mode
-            hide-mode-line marginalia mood-line nerd-icons-completion
-            nerd-icons-dired orderless pdf-tools sbt-mode scala-repl
-            scala-ts-mode solaire spacious-mode spacious-padding typit
-            vertico vertico-posframe vertico-quick vterm))
+            hide-mode-line magit marginalia mood-line
+            nerd-icons-completion nerd-icons-dired orderless pdf-tools
+            sbt-mode scala-repl scala-ts-mode solaire spacious-mode
+            spacious-padding typit vertico vertico-posframe
+            vertico-quick vterm))
  '(tool-bar-mode nil))
 
 ;;; init.el ends here
