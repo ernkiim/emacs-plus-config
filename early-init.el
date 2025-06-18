@@ -15,17 +15,19 @@
               frame-resize-pixelwise t
               frame-inhibit-implied-resize nil
               default-frame-alist
-              '((ns-frame-appearance . dark)
-                (ns-transparent-titlebar . t)
-                (height . 0.45)
+              '((height . 0.45)
                 (width . 0.4)
                 (left . 0.5)
                 (top . 0.3)
-                ;; (internal-border-width . 10)
                 (vertical-scroll-bars . nil)
                 (horizontal-scroll-bars . nil)
                 (menu-bar-lines . 0)
                 (font . "Meslo LG S-15")))
+
+;; MacOS specific appearance
+(when (eq system-type 'darwin)
+  (add-to-list 'default-frame-alist '(ns-appearance . 'dark))
+  (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t)))
 
 ;; Abnormal hook, passes created frame as argument
 ;; Adding in early-init so that the functions run on initial frame
