@@ -95,7 +95,6 @@
   (show-paren-context-when-offscreen 'overlay) ; Emacs 29
   :hook
   ((after-init . spotify-init) ; start dedicated "spotify" vterm buffer
-   (after-init . savehist-mode)
    (after-init . pixel-scroll-precision-mode)
    (after-init . (lambda ()
                    (define-key input-decode-map
