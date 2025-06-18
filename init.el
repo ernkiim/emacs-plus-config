@@ -137,8 +137,7 @@
 
 ;; ---------- Magit ---------- ;;
 
-(use-package magit
-  :ensure t)
+(use-package magit)
 
 
 ;; ---------- Dired ---------- ;;
