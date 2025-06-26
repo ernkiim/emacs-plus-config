@@ -23,18 +23,6 @@
 
 ;; ---------- Preferences ---------- ;;
 
-;; ;; Padding
-(use-package spacious-padding
-  :hook after-init
-  :custom
-  (spacious-padding-subtle-mode-line '(:mode-line-inactive "#282a36"))
-  (spacious-padding-widths '( :internal-border-width 10
-                              :header-line-width 4
-                              :mode-line-width 4
-                              :tab-width 4
-                              :right-divider-width 20
-                              :scroll-bar-width 8)))
-
 ;; Misc. preferences
 (use-package emacs
   :config
@@ -71,7 +59,7 @@
   (mouse-wheel-tilt-scroll t)
   (mouse-wheel-flip-direction t)
   ;; Defer prog hook
-  (initial-major-mode 'fundamental-mode)
+;;  (initial-major-mode 'fundamental-mode)
   (initial-buffer-choice 'vterm)
   ;; Silence
   (ring-bell-function 'ignore)
@@ -90,7 +78,7 @@
   (show-paren-context-when-offscreen 'overlay) ; Emacs 29
   :hook
   ((after-init . (lambda ()     ; start dedicated "spotify" vterm buffer
-                   (load-file "~/.emacs.d/spotify-player.el")
+                   (load "~/.emacs.d/spotify-player.el" nil t)
                    (spotify-init)))
    (after-init . pixel-scroll-precision-mode)
    (after-init . (lambda ()
@@ -98,6 +86,21 @@
                    (define-key input-decode-map
                                (kbd "C-i")
                                (kbd "H-i"))))))
+
+;; Theme
+(use-package dracula-theme)
+
+;; Padding
+(use-package spacious-padding
+  :hook after-init
+  :custom
+  (spacious-padding-subtle-mode-line '(:mode-line-inactive "#282a36"))
+  (spacious-padding-widths '( :internal-border-width 10
+                              :header-line-width 4
+                              :mode-line-width 4
+                              :tab-width 4
+                              :right-divider-width 20
+                              :scroll-bar-width 8)))
 
 ;; Server-specific config
 (use-package server
@@ -115,21 +118,10 @@
                                            (kbd "C-i")
                                            (kbd "H-i")))))
 
-;; Hide mode line on scratch (also hides spacious-padding artifact)
-(use-package hide-mode-line
-  :hook
-  (vterm-mode
-   pdf-view-mode))
 
 ;; Auto pair balanced expressions.
 (use-package electric-pair
   :hook after-init)
-
-;; Scroll half page
-(use-package view
-  :bind
-  (("C-v" . View-scroll-half-page-forward)
-   ("M-v" . View-scroll-half-page-backward)))
 
 ;; Much faster than doom-modeline
 (use-package mood-line                  
@@ -138,12 +130,49 @@
   :custom (mood-line-glyph-alist mood-line-glyphs-fira-code))
 
 
+;; ---------- Window ---------- ;;
+
+(use-package winum
+  :hook after-init
+  :config
+  (defun my-winum-assign ()
+    "Manually assign number based on buffer"
+    (cond
+     ((equal (buffer-name) "spotify") 9)))
+  
+  (add-to-list 'winum-assign-functions #'my-winum-assign)
+  :custom
+  ;; Insert numbers manually in custom mode line
+  (winum-auto-setup-mode-line nil)
+  :custom-face
+  ;; Window number face
+  (winum-face ((t (:inherit mood-line-unimportant))))
+  :bind
+  (("s-0" . winum-select-window-0-or-10)
+   ("s-1" . winum-select-window-1)
+   ("s-2" . winum-select-window-2)
+   ("s-3" . winum-select-window-3)
+   ("s-4" . winum-select-window-4)
+   ("s-5" . winum-select-window-5)
+   ("s-6" . winum-select-window-6)
+   ("s-7" . winum-select-window-7)
+   ("s-8" . winum-select-window-8)
+   ("s-9" . winum-select-window-9)))
+
+;; ;; Hide mode line on vterm
+(use-package hide-mode-line
+  :hook
+  (vterm-mode
+   pdf-view-mode))
+
+
 ;; ---------- Magit ---------- ;;
 
 (use-package magit
   :init
   ;; Use child clients for commit messages
-  (use-package with-editor)
+  (use-package with-editor
+    :defer t)
   :custom
   ;; Add magit-status, -dispatch, and -file-dispatch actions to global
   (magit-maybe-define-global-key-bindings recommended)
@@ -237,12 +266,6 @@
   '(?n ?t ?e ?s ?i ?r ?o ?a)
   "Colemak home row in order of strong fingers")
 
-;; (use-package ace-window
-;;   :custom
-;;   (aw-keys homerow)
-;;   (aw-dispatch-always nil)
-;;   :bind ("M-o" . ace-window))
-
 (use-package avy                        
   :config
   (add-to-list 'avy-orders-alist '(avy-goto-char-2 . avy-order-closest))
@@ -294,8 +317,8 @@
 (use-package vterm
   :commands vterm-mode
   :bind
-  (("s-t" . vterm)
-   ("M-s-t" . vterm-other-window)
+  (("s-T" . vterm)
+   ("s-t" . vterm-other-window)
    (:map vterm-mode-map ("C-y" . vterm-yank)))
   :custom
   (vterm-clear-scrollback-when-clearing t) ; Completely clear vterm on C-l 
@@ -387,7 +410,7 @@
  ;; If there is more than one, they won't work right.
  '(custom-enabled-themes '(dracula))
  '(custom-safe-themes
-   '("4acfb4e3d5e86206c4c3a834f4a9356beb25dc04c48e4e364006eff5625606ab"
+   '("2d74de1cc32d00b20b347f2d0037b945a4158004f99877630afc034a674e3ab7"
      default))
  '(mood-line-format
    '((" " (mood-line-segment-modal) " "
@@ -396,14 +419,15 @@
       "  " (mood-line-segment-multiple-cursors) "  ")
      ((mood-line-segment-vc) "  " (mood-line-segment-major-mode) "  "
       (mood-line-segment-misc-info) "  " (mood-line-segment-checker)
-      "  " (mood-line-segment-process) "  " " ")))
+      "  " (mood-line-segment-process) " "
+      (format winum-format (winum-get-number-string)))))
  '(package-selected-packages
    '(auctex avy consult corfu dracula-theme haskell-ts-mode
             hide-mode-line magit marginalia mood-line
             nerd-icons-completion nerd-icons-dired orderless pdf-tools
             sbt-mode scala-repl scala-ts-mode solaire spacious-mode
-            spacious-padding typit vertico vertico-posframe
-            vertico-quick vterm))
+            spacious-padding vertico vertico-posframe vertico-quick
+            vterm winum))
  '(tool-bar-mode nil))
 
 ;;; init.el ends here

@@ -6,12 +6,11 @@
       gc-cons-percentage 0.8
       read-process-output-max (* 1024 1024))
                     
-
 ;; Default appearance
 (setq-default package-native-compile t
               ns-use-proxy-icon nil
               tool-bar-mode nil
-              frame-title-format "\n"
+              frame-title-format "Emacs\n"
               frame-resize-pixelwise t
               frame-inhibit-implied-resize nil
               default-frame-alist
