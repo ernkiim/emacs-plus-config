@@ -325,6 +325,44 @@
   (vterm-min-window-width 60))
 
 
+;; ---------- LaTeX ---------- ;;
+
+;; More features than built-in tex-mode
+(use-package auctex
+  :commands LaTeX-mode
+  :config
+  (add-hook 'TeX-after-compilation-finished-functions
+            #'TeX-revert-document-buffer)
+  :custom
+  (TeX-view-program-selection '((output-pdf "PDF Tools"))) ; View in pdf-tools
+  (TeX-view-program-list '(("PDF Tools" TeX-pdf-tools-sync-view))) ; Sync
+  (TeX-source-correlate-start-server t) 
+  (TeX-save-query nil) ; Don't save query when running command list
+  (TeX-electric-math '("\\(" . "\\)")) ; Insert '\(\)' for '$$' automatically
+  (LaTeX-electric-left-right-brace t)) ; Balance braces automatically
+
+;; Treat environments, delimiters as balanced expressions for navigation
+;; FANTASTIC
+(use-package tex-parens
+  :ensure t
+  :hook LaTeX-mode)
+
+;; Pdf viewer
+(use-package pdf-tools
+  :magic
+  ("%PDF" . pdf-view-mode)
+  :config
+  (pdf-tools-install)
+  (add-to-list 'pdf-tools-enabled-modes 'pdf-view-themed-minor-mode)
+  :custom
+  (pdf-view-resize-factor 1.1)
+  (pdf-view-display-size 'fit-page))
+
+(use-package saveplace-pdf-view
+  :after (:any doc-view pdf-tools)
+  :demand t)
+
+
 ;; ---------- Programming modes ---------- ;;
 
 ;; LSP
@@ -376,31 +414,6 @@
   :commands scala-repl-run)
 
 
-;; Latex
-(use-package auctex
-  :commands latex-mode
-  :config
-  (add-hook 'TeX-after-compilation-finished-functions
-            #'TeX-revert-document-buffer)
-  :custom
-  (TeX-view-program-selection '((output-pdf "PDF Tools")))
-  (TeX-view-program-list '(("PDF Tools" TeX-pdf-tools-sync-view)))
-  (TeX-source-correlate-start-server t)
-  (TeX-save-query nil)
-  (TeX-electric-math '("\\(" . "\\)"))
-  (LaTeX-electric-left-right-brace t))
-
-(use-package pdf-tools
-  :magic
-  ("%PDF" . pdf-view-mode)
-  :config
-  (pdf-tools-install)
-  (add-to-list 'pdf-tools-enabled-modes 'pdf-view-themed-minor-mode)
-  :custom
-  (pdf-view-resize-factor 1.1)
-  (pdf-view-display-size 'fit-page))
-
-
 ;; ---------- Custom ---------- ;;
 
 (custom-set-variables
@@ -425,9 +438,9 @@
    '(auctex avy consult corfu dracula-theme haskell-ts-mode
             hide-mode-line magit marginalia mood-line
             nerd-icons-completion nerd-icons-dired orderless pdf-tools
-            sbt-mode scala-repl scala-ts-mode solaire spacious-mode
-            spacious-padding vertico vertico-posframe vertico-quick
-            vterm winum))
+            saveplace-pdf-view sbt-mode scala-repl scala-ts-mode
+            solaire spacious-mode spacious-padding tex-parens vertico
+            vertico-posframe vertico-quick vterm winum))
  '(tool-bar-mode nil))
 
 ;;; init.el ends here
