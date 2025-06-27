@@ -10,7 +10,7 @@
 (setq-default package-native-compile t
               ns-use-proxy-icon nil
               tool-bar-mode nil
-              frame-title-format "Emacs\n"
+              frame-title-format "\n"
               frame-resize-pixelwise t
               frame-inhibit-implied-resize nil
               default-frame-alist
@@ -21,7 +21,8 @@
                 (vertical-scroll-bars . nil)
                 (horizontal-scroll-bars . nil)
                 (menu-bar-lines . 0)
-                (font . "Meslo LG S-15")))
+                (font . "Liga SFMono Nerd Font-15")
+		))
 
 ;; MacOS specific appearance
 (when (eq system-type 'darwin)
