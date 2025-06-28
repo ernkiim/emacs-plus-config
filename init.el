@@ -252,6 +252,19 @@
   (completion-category-defaults nil)
   (completion-category-overrides '((file (styles basic partial-completion)))))
 
+(use-package embark
+  :bind
+  (("C-'"   . embark-act)
+   ("M-'"   . embark-dwim)
+   ("C-h b" . embark-bindings))
+  :custom
+  ;; Completing read
+  (prefix-help-command #'embark-prefix-help-command))
+
+(use-package embark-consult
+  :hook
+  (embark-collect-mode . consult-preview-at-point-mode))
+
 (use-package corfu
   :custom
   (corfu-cycle t)
@@ -448,8 +461,8 @@
       "  " (mood-line-segment-process) " "
       (format winum-format (winum-get-number-string)))))
  '(package-selected-packages
-   '(auctex avy consult corfu dracula-theme haskell-ts-mode
-            hide-mode-line magit marginalia mood-line
+   '(auctex avy consult corfu dracula-theme embark embark-consult
+            haskell-ts-mode hide-mode-line magit marginalia mood-line
             nerd-icons-completion nerd-icons-dired orderless pdf-tools
             saveplace-pdf-view sbt-mode scala-repl scala-ts-mode
             solaire spacious-mode spacious-padding tex-parens vertico
