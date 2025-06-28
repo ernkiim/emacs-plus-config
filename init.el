@@ -7,8 +7,9 @@
 ;; ---------- package, use-package ---------- ;;
 
 (require 'package)
-(add-to-list 'package-archives '("gnu"   . "https://elpa.gnu.org/packages/"))
-(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
+(add-to-list 'package-archives '("gnu"    . "https://elpa.gnu.org/packages/"))
+(add-to-list 'package-archives '("melpa"  . "https://melpa.org/packages/"))
+;; (add-to-list 'package-archived '("nongnu" . "https://elpa.nongnu.org/nongnu/"))
 (package-initialize)
 
 (unless (package-installed-p 'use-package)
@@ -39,6 +40,7 @@
   (defvar first-call t)
   :bind
   (("M-o" . other-window)
+   ("M-u" . up-list)
    ("C-<wheel-up>"   . nil)  ; Momentum can trigger scroll wheel bindings
    ("C-<wheel-down>" . nil)
    ("C-." . scroll-up-line)
@@ -124,6 +126,20 @@
   :init
   (mood-line-mode +1)
   :custom (mood-line-glyph-alist mood-line-glyphs-fira-code))
+
+
+;; ---------- Org ---------- ;;
+
+(use-package org
+  :ensure t
+  :custom
+  (org-agenda-files "~/org")
+  (org-log-done 'time)
+  (org-return-follows-link t)
+  :mode ("\\.org\\'" . org-mode)
+  :hook
+  (org-mode . (org-indent-mode
+               visual-line-mode)))
 
 
 ;; ---------- Window ---------- ;;
@@ -248,14 +264,11 @@
   (corfu-on-exact-match nil)      ; Don't auto expand tempel snippets
   ;; Optionally use TAB for cycling, default is `corfu-complete'.
   :bind (:map corfu-map
-              ("M-SPC"      . corfu-insert-separator)
-              ("C-<return>" . corfu-insert)
-              ("RET"        . nil))
+              ("M-SPC"      . corfu-insert-separator))
   :init
   (global-corfu-mode)
   (corfu-history-mode)
   (corfu-popupinfo-mode)) ; Popup completion info
-
 
 
 ;; ---------- Abo-abo ---------- ;;
@@ -343,7 +356,9 @@
 ;; FANTASTIC
 (use-package tex-parens
   :ensure t
-  :hook LaTeX-mode)
+  :hook LaTeX-mode
+  :bind
+  (:map TeX-mode-map ("M-u" . tex-parens-up-list)))
 
 ;; Pdf viewer
 (use-package pdf-tools
