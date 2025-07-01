@@ -386,6 +386,8 @@
 
 (use-package saveplace-pdf-view
   :after (:any doc-view pdf-tools)
+  :bind
+  (:map pdf-view-mode-map ("s a" . save-place-mode))
   :demand t)
 
 
@@ -417,9 +419,9 @@
 
 
 ;; ;; Agda 2.7.0.1
-;; ;; Recompile if reinstalling agda-mode
-;; (load-file (let ((coding-system-for-read 'utf-8))
-;;              (shell-command-to-string "agda-mode locate")))
+;; Recompile if reinstalling agda-mode
+(load-file (let ((coding-system-for-read 'utf-8))
+             (shell-command-to-string "agda-mode locate")))
 
 ;; Scala
 (use-package scala-ts-mode
