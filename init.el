@@ -29,7 +29,7 @@
   :config
   ;; Clear echo messages after delay
   (run-with-idle-timer 3 t (lambda () (message "")))
-  ;; Hack startup message
+  ;; Intercept startup message
   (defun display-startup-echo-area-message ()
     (message ""))
   ;; Delete files into trash bin (when using dired, etc.)
@@ -79,8 +79,7 @@
   ;; This is pretty neat
   (show-paren-context-when-offscreen 'overlay) ; Emacs 29
   :hook
-  (;; (prog-mode .(lambda () (message "prog hook run")))
-   (after-init . (lambda ()     ; start dedicated "spotify" vterm buffer
+  ((after-init . (lambda ()     ; start dedicated "spotify" vterm buffer
                    (load "~/.emacs.d/spotify-player.el" nil t)
                    (spotify-init)))
    (after-init . pixel-scroll-precision-mode)
@@ -155,6 +154,7 @@
   (add-to-list 'winum-assign-functions #'my-winum-assign)
   :custom
   ;; Insert numbers manually in custom mode line
+  (winum-auto-assign-0-to-minibuffer t)
   (winum-auto-setup-mode-line nil)
   :custom-face
   ;; Window number face
@@ -206,6 +206,8 @@
   :custom
   ;; Keep only current file's dired buffer
   (dired-kill-when-opening-new-dired-buffer t)
+  ;; Show symlink targets in hide-details-mode
+  (dired-hide-details-hide-symlink-targets nil)
   :bind
   (:map dired-mode-map ("^" . dired-up-directory)))
 
@@ -252,19 +254,6 @@
   (completion-category-defaults nil)
   (completion-category-overrides '((file (styles basic partial-completion)))))
 
-(use-package embark
-  :bind
-  (("C-'"   . embark-act)
-   ("M-'"   . embark-dwim)
-   ("C-h b" . embark-bindings))
-  :custom
-  ;; Completing read
-  (prefix-help-command #'embark-prefix-help-command))
-
-(use-package embark-consult
-  :hook
-  (embark-collect-mode . consult-preview-at-point-mode))
-
 (use-package corfu
   :custom
   (corfu-cycle t)
@@ -292,9 +281,11 @@
 
 (use-package avy                        
   :config
+  ;; Let closer matches be shallower in selection tree
   (add-to-list 'avy-orders-alist '(avy-goto-char-2 . avy-order-closest))
 
   (defun avy-mk-stay-action (pt fn)
+    "Return avy action which calls fn at pt without moving point"
     (save-excursion
       (goto-char pt)
       (funcall fn))
@@ -303,11 +294,13 @@
       (ring-ref avy-ring 0))))
   
   (defun avy-action-comment-line-stay (pt)
+    "Comment line at pt without moving point"
     (avy-mk-stay-action
      pt
      (lambda () (comment-line 1))))
 
   (defun avy-action-comment-defun-stay (pt)
+    "Comment defun at pt without moving point"
     (avy-mk-stay-action
      pt
      (lambda ()
@@ -315,12 +308,15 @@
        (comment-region (region-beginning) (region-end)))))
   
   :custom
+  ;; Use colemak home row
   (avy-keys homerow)
+  ;; Set all non-matched text to background color when selecting
   (avy-background t)
+  ;; Allow action on single match
   (avy-single-candidate-jump nil)
   (avy-dispatch-alist
-   '((?\; . avy-action-comment-line-stay)
-     (?\: . avy-action-comment-defun-stay)
+   '((?\; . avy-action-comment-line-stay)  ; I added
+     (?\: . avy-action-comment-defun-stay) ; I added
      (?x . avy-action-kill-move)
      (?X . avy-action-kill-stay)
      (?g . avy-action-teleport)
@@ -329,8 +325,7 @@
      (?y . avy-action-yank)
      (?Y . avy-action-yank-line)
      (?z . avy-action-zap-to-char)))
-  :custom-face
-  (avy-background-face ((t :inherit shadow)))
+  :custom-face (avy-background-face ((t :inherit shadow))) ; Set background color for selecting
   :bind
   (("H-i" . avy-goto-char-2) ; C-i
    :map isearch-mode-map ("H-i" . avy-isearch)))
@@ -368,17 +363,14 @@
 ;; Treat environments, delimiters as balanced expressions for navigation
 ;; FANTASTIC
 (use-package tex-parens
-  :ensure t
   :hook LaTeX-mode
-  :bind
-  (:map TeX-mode-map ("M-u" . tex-parens-up-list)))
+  :bind (:map TeX-mode-map ("M-u" . tex-parens-up-list)))
 
 ;; Pdf viewer
 (use-package pdf-tools
-  :magic
-  ("%PDF" . pdf-view-mode)
+  :magic ("%PDF" . pdf-view-mode)
   :config
-  (pdf-tools-install)
+  (pdf-tools-install :no-query)
   (add-to-list 'pdf-tools-enabled-modes 'pdf-view-themed-minor-mode)
   :custom
   (pdf-view-resize-factor 1.1)
@@ -386,8 +378,7 @@
 
 (use-package saveplace-pdf-view
   :after (:any doc-view pdf-tools)
-  :bind
-  (:map pdf-view-mode-map ("s a" . save-place-mode))
+  :bind (:map pdf-view-mode-map ("s a" . save-place-mode))
   :demand t)
 
 
@@ -463,8 +454,8 @@
       "  " (mood-line-segment-process) " "
       (format winum-format (winum-get-number-string)))))
  '(package-selected-packages
-   '(auctex avy consult corfu dracula-theme embark embark-consult
-            haskell-ts-mode hide-mode-line magit marginalia mood-line
+   '(auctex avy consult corfu dracula-theme haskell-ts-mode
+            hide-mode-line magit marginalia mood-line
             nerd-icons-completion nerd-icons-dired orderless pdf-tools
             saveplace-pdf-view sbt-mode scala-repl scala-ts-mode
             solaire spacious-mode spacious-padding tex-parens vertico
