@@ -130,15 +130,25 @@
 ;; ---------- Org ---------- ;;
 
 (use-package org
-  :ensure t
   :custom
-  (org-agenda-files "~/org")
-  (org-log-done 'time)
+  (org-log-done-time 'time)
   (org-return-follows-link t)
-  :mode ("\\.org\\'" . org-mode)
   :hook
   (org-mode . (org-indent-mode
                visual-line-mode)))
+
+;; (use-package org
+;;   :custom
+;;   (org-agenda-files "~/org")
+;;   (org-log-done 'time)
+;;   (org-return-follows-link t)
+;;   :mode ("\\.org\\'" . org-mode)
+;;   :hook
+;;   (org-mode . (org-indent-mode
+;;                visual-line-mode)))
+
+(use-package org-roam
+  :ensure t)
 
 
 ;; ---------- Window ---------- ;;
@@ -456,10 +466,11 @@
  '(package-selected-packages
    '(auctex avy consult corfu dracula-theme haskell-ts-mode
             hide-mode-line magit marginalia mood-line
-            nerd-icons-completion nerd-icons-dired orderless pdf-tools
-            saveplace-pdf-view sbt-mode scala-repl scala-ts-mode
-            solaire spacious-mode spacious-padding tex-parens vertico
-            vertico-posframe vertico-quick vterm winum))
+            nerd-icons-completion nerd-icons-dired orderless org-roam
+            pdf-tools saveplace-pdf-view sbt-mode scala-repl
+            scala-ts-mode solaire spacious-mode spacious-padding
+            tex-parens vertico vertico-posframe vertico-quick vterm
+            winum))
  '(tool-bar-mode nil))
 
 ;;; init.el ends here
