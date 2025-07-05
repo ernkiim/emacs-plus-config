@@ -122,8 +122,7 @@
 
 ;; Much faster than doom-modeline
 (use-package mood-line                  
-  :init
-  (mood-line-mode +1)
+  :hook after-init
   :custom (mood-line-glyph-alist mood-line-glyphs-fira-code))
 
 
@@ -136,16 +135,6 @@
   :hook
   (org-mode . (org-indent-mode
                visual-line-mode)))
-
-;; (use-package org
-;;   :custom
-;;   (org-agenda-files "~/org")
-;;   (org-log-done 'time)
-;;   (org-return-follows-link t)
-;;   :mode ("\\.org\\'" . org-mode)
-;;   :hook
-;;   (org-mode . (org-indent-mode
-;;                visual-line-mode)))
 
 (use-package org-roam
   :ensure t)
@@ -265,6 +254,10 @@
   (completion-category-overrides '((file (styles basic partial-completion)))))
 
 (use-package corfu
+  :hook
+  (after-init . (global-corfu-mode
+                 corfu-history-mode
+                 corfu-poppupinfo-mode))
   :custom
   (corfu-cycle t)
   (corfu-auto t)
@@ -275,12 +268,7 @@
   (corfu-preselect 'prompt)
   (corfu-on-exact-match nil)      ; Don't auto expand tempel snippets
   ;; Optionally use TAB for cycling, default is `corfu-complete'.
-  :bind (:map corfu-map
-              ("M-SPC"      . corfu-insert-separator))
-  :init
-  (global-corfu-mode)
-  (corfu-history-mode)
-  (corfu-popupinfo-mode)) ; Popup completion info
+  :bind (:map corfu-map ("M-SPC"      . corfu-insert-separator)))
 
 
 ;; ---------- Abo-abo ---------- ;;
@@ -359,9 +347,11 @@
 ;; More features than built-in tex-mode
 (use-package auctex
   :commands LaTeX-mode
-  :config
-  (add-hook 'TeX-after-compilation-finished-functions
-            #'TeX-revert-document-buffer)
+  :hook
+  (TeX-after-compilation-finished-functions . TeX-revert-document-buffer)
+  ;; :config
+  ;; (add-hook 'TeX-after-compilation-finished-functions
+  ;;           #'TeX-revert-document-buffer)
   :custom
   (TeX-view-program-selection '((output-pdf "PDF Tools"))) ; View in pdf-tools
   (TeX-view-program-list '(("PDF Tools" TeX-pdf-tools-sync-view))) ; Sync
