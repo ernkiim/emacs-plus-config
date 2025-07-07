@@ -130,14 +130,15 @@
 
 (use-package org
   :custom
-  (org-log-done-time 'time)
-  (org-return-follows-link t)
+  (org-log-done-time 'time) ; Log the time when you finish a TODO item
+  (org-return-follows-link t) ; Follow link with RET
+  (org-format-latex-options (plist-put org-format-latex-options :scale 1.5)) ; Make latex previews a little bigger
   :hook
   (org-mode . org-indent-mode)
   (org-mode . visual-line-mode))
 
 (use-package org-roam
-  :hook (org-roam-mode . org-roam-db-autosync-mode))
+  :hook (org-roam-mode . org-roam-db-autosync-mode)) ; Sync automatically
 
 
 ;; ---------- Window ---------- ;;
