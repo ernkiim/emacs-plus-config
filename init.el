@@ -133,11 +133,11 @@
   (org-log-done-time 'time)
   (org-return-follows-link t)
   :hook
-  (org-mode . (org-indent-mode
-               visual-line-mode)))
+  (org-mode . org-indent-mode)
+  (org-mode . visual-line-mode))
 
 (use-package org-roam
-  :ensure t)
+  :hook (org-roam-mode . org-roam-db-autosync-mode))
 
 
 ;; ---------- Window ---------- ;;
@@ -457,10 +457,10 @@
    '(auctex avy consult corfu dracula-theme haskell-ts-mode
             hide-mode-line magit marginalia mood-line
             nerd-icons-completion nerd-icons-dired orderless org-roam
-            pdf-tools saveplace-pdf-view sbt-mode scala-repl
-            scala-ts-mode solaire spacious-mode spacious-padding
-            tex-parens vertico vertico-posframe vertico-quick vterm
-            winum))
+            org-roam-ui pdf-tools saveplace-pdf-view sbt-mode
+            scala-repl scala-ts-mode solaire spacious-mode
+            spacious-padding tex-parens vertico vertico-posframe
+            vertico-quick vterm winum))
  '(tool-bar-mode nil))
 
 ;;; init.el ends here
