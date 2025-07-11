@@ -132,13 +132,12 @@
   :custom
   (org-log-done-time 'time) ; Log the time when you finish a TODO item
   (org-return-follows-link t) ; Follow link with RET
-  (org-format-latex-options (plist-put org-format-latex-options :scale 1.5)) ; Make latex previews a little bigger
   :hook
   (org-mode . org-indent-mode)
   (org-mode . visual-line-mode))
 
 (use-package org-roam
-  :hook (org-roam-mode . org-roam-db-autosync-mode)) ; Sync automatically
+  :hook (org-mode . org-roam-db-autosync-mode)) ; Sync automatically
 
 
 ;; ---------- Window ---------- ;;
@@ -409,6 +408,9 @@
   (unless (treesit-grammar-location 'haskell)
    (treesit-install-language-grammar 'haskell)))
 
+(use-package consult-hoogle
+  :ensure t
+  )
 
 ;; ;; Agda 2.7.0.1
 ;; Recompile if reinstalling agda-mode
@@ -455,8 +457,8 @@
       "  " (mood-line-segment-process) " "
       (format winum-format (winum-get-number-string)))))
  '(package-selected-packages
-   '(auctex avy consult corfu dracula-theme haskell-ts-mode
-            hide-mode-line magit marginalia mood-line
+   '(auctex avy consult consult-hoogle corfu dracula-theme
+            haskell-ts-mode hide-mode-line magit marginalia mood-line
             nerd-icons-completion nerd-icons-dired orderless org-roam
             org-roam-ui pdf-tools saveplace-pdf-view sbt-mode
             scala-repl scala-ts-mode solaire spacious-mode
