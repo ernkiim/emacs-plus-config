@@ -9,7 +9,6 @@
 (require 'package)
 (add-to-list 'package-archives '("gnu"    . "https://elpa.gnu.org/packages/"))
 (add-to-list 'package-archives '("melpa"  . "https://melpa.org/packages/"))
-;; (add-to-list 'package-archived '("nongnu" . "https://elpa.nongnu.org/nongnu/"))
 (package-initialize)
 
 (unless (package-installed-p 'use-package)
@@ -27,8 +26,6 @@
 ;; Misc. preferences
 (use-package emacs
   :config
-  ;; Clear echo messages after delay
-  (run-with-idle-timer 3 t (lambda () (message "")))
   ;; Intercept startup message
   (defun display-startup-echo-area-message ()
     (message ""))
@@ -299,12 +296,43 @@
 
   (defun avy-action-comment-defun-stay (pt)
     "Comment defun at pt without moving point"
-    (avy-mk-stay-action
-     pt
-     (lambda ()
-       (mark-defun)
-       (comment-region (region-beginning) (region-end)))))
+    (avy-mk-stay-action pt
+                        (lambda ()
+                          (mark-defun)
+                          (comment-region (region-beginning) (region-end)))))
+  (defun avy-action-kill-whole-line (pt)
+    "Kill text"
+    (save-excursion
+      (goto-char pt)
+      (kill-whole-line))
+    (select-window
+     (cdr
+      (ring-ref avy-ring 0)))
+    t)
+
+  (defun avy-action-copy-whole-line (pt)
+    (save-excursion
+      (goto-char pt)
+      (cl-destructuring-bind (start . end)
+          (bounds-of-thing-at-point 'line)
+        (copy-region-as-kill start end)))
+    (select-window
+     (cdr
+      (ring-ref avy-ring 0)))
+    t)
   
+  (defun avy-action-yank-whole-line (pt)
+    (avy-action-copy-whole-line pt)
+    (save-excursion (yank))
+    t)
+
+  (defun avy-action-teleport-whole-line (pt)
+    (avy-action-kill-whole-line pt)
+    (save-excursion (yank)) t)
+  
+  (defun avy-action-mark-to-char (pt)
+    (activate-mark)
+    (goto-char pt))
   :custom
   ;; Use colemak home row
   (avy-keys homerow)
@@ -312,17 +340,21 @@
   (avy-background t)
   ;; Allow action on single match
   (avy-single-candidate-jump nil)
+  ;; Bindings
   (avy-dispatch-alist
-   '((?\; . avy-action-comment-line-stay)  ; I added
-     (?\: . avy-action-comment-defun-stay) ; I added
-     (?x . avy-action-kill-move)
-     (?X . avy-action-kill-stay)
-     (?g . avy-action-teleport)
-     (?m . avy-action-mark)
-     (?c . avy-action-copy)
+   '((?\; . avy-action-comment-line-stay)  
+     (?\: . avy-action-comment-defun-stay)
+     (?k . avy-action-kill-stay)
+     (?K . avy-action-kill-whole-line)
+     (?w . avy-action-copy)
+     (?W . avy-action-copy-whole-line)
      (?y . avy-action-yank)
-     (?Y . avy-action-yank-line)
-     (?z . avy-action-zap-to-char)))
+     (?Y . avy-action-yank-whole-line)
+     (?p . avy-action-teleport)
+     (?P . avy-action-teleport-whole-line)
+     (?z . avy-action-zap-to-char)
+     (?m . avy-action-mark)
+     (? . avy-action-mark-to-char)))
   :custom-face (avy-background-face ((t :inherit shadow))) ; Set background color for selecting
   :bind
   (("H-i" . avy-goto-char-2) ; C-i
