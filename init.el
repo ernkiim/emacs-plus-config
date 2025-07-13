@@ -528,11 +528,10 @@ tasks."
 (use-package consult-hoogle
   :after haskell-ts-mode)
 
-;; ;; Agda 2.7.0.1
+;; Agda 2.8.0
 ;; Recompile if reinstalling agda-mode
 (load-file (let ((coding-system-for-read 'utf-8))
-             (shell-command-to-string "agda-mode locate")))
-
+                (shell-command-to-string "agda --emacs-mode locate")))
 ;; Scala
 (use-package scala-ts-mode
   :interpreter ("scala" . scala-ts-mode)
@@ -596,51 +595,3 @@ tasks."
       gc-cons-percentage 0.5)
 
 (provide 'init)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
