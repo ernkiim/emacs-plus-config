@@ -212,8 +212,6 @@ tasks."
       "* %?"
       :target (file+head "%<%Y-%m-%d>.org"
                          "#+title: %<%Y-%m-%d>\n"))))
-  ;; Let org-agenda index all org-roam-dailies files
-  (org-agenda-files (add-to-list 'org-agenda-files org-roam-dailies-directory))
   :bind
   (("C-c n f"   . 'org-roam-node-find)
    ("C-c n u i" . 'org-roam-ui-open)
@@ -339,8 +337,7 @@ tasks."
 (use-package corfu
   :hook
   (after-init . global-corfu-mode)
-  (after-init . corfu-history-mode)
-  (after-init . corfu-poppupinfo-mode)
+  (corfu-mode . corfu-history-mode)
   :custom
   (corfu-cycle t)
   (corfu-auto t)
@@ -351,7 +348,7 @@ tasks."
   (corfu-preselect 'prompt)
   (corfu-on-exact-match nil)      ; Don't auto expand tempel snippets
   ;; Optionally use TAB for cycling, default is `corfu-complete'.
-  :bind (:map corfu-map ("M-SPC"      . corfu-insert-separator)))
+  :bind (:map corfu-map ("M-SPC" . corfu-insert-separator)))
 
 
 ;; ---------- Abo-abo ---------- ;;
