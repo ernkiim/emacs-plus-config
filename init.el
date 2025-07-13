@@ -202,13 +202,18 @@ tasks."
   ;; directory in the db, syncing again afterwards fixes
   (org-capture-after-finalize . org-roam-db-sync)
   :custom
-  (org-roam-directory (file-truename "~/org-roam"))
-  (org-roam-dailies-directory org-roam-directory) ; TESTING, seems to be discouraged
-  (org-roam-dailies-capture-templates
+  ;; Set the home directory for all roam nodes
+  (org-roam-directory (file-truename "~/org-roam")) ; default
+  ;; Set the subdirectory for daily captures
+  (org-roam-dailies-directory "daily/") ; default
+  ;; Set the template for daily captures 
+  (org-roam-dailies-capture-templates ; default
    '(("d" "default" entry
       "* %?"
       :target (file+head "%<%Y-%m-%d>.org"
                          "#+title: %<%Y-%m-%d>\n"))))
+  ;; Let org-agenda index all org-roam-dailies files
+  (org-agenda-files (add-to-list 'org-agenda-files org-roam-dailies-directory))
   :bind
   (("C-c n f"   . 'org-roam-node-find)
    ("C-c n u i" . 'org-roam-ui-open)
@@ -333,9 +338,9 @@ tasks."
 
 (use-package corfu
   :hook
-  (after-init . (global-corfu-mode
-                 corfu-history-mode
-                 corfu-poppupinfo-mode))
+  (after-init . global-corfu-mode)
+  (after-init . corfu-history-mode)
+  (after-init . corfu-poppupinfo-mode)
   :custom
   (corfu-cycle t)
   (corfu-auto t)
