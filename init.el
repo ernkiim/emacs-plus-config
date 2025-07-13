@@ -129,12 +129,94 @@
   :custom
   (org-log-done-time 'time) ; Log the time when you finish a TODO item
   (org-return-follows-link t) ; Follow link with RET
+  (org-latex-create-formula-image-program 'dvisvgm) ; Need to set this manually for sharp previews
   :hook
+  after-init
   (org-mode . org-indent-mode)
-  (org-mode . visual-line-mode))
+  (org-mode . visual-line-mode)
+  :bind
+  (("C-c t l" . org-todo-list)))
 
 (use-package org-roam
-  :hook (org-mode . org-roam-db-autosync-mode)) ; Sync automatically
+  :after org
+  :config
+  (defun roam-extra:get-filetags ()
+    (split-string (or (org-roam-get-keyword "filetags") "")))
+
+  (defun roam-extra:add-filetag (tag)
+    (let* ((new-tags (cons tag (roam-extra:get-filetags)))
+           (new-tags-str (combine-and-quote-strings new-tags)))
+      (org-roam-set-keyword "filetags" new-tags-str)))
+
+  (defun roam-extra:del-filetag (tag)
+    (let* ((new-tags (seq-difference (roam-extra:get-filetags) `(,tag)))
+           (new-tags-str (combine-and-quote-strings new-tags)))
+      (org-roam-set-keyword "filetags" new-tags-str)))
+
+  (defun roam-extra:todo-p ()
+    "Return non-nil if current buffer has any TODO entry.
+
+TODO entries marked as done are ignored, meaning the this
+function returns nil if current buffer contains only completed
+tasks."
+    (org-element-map
+        (org-element-parse-buffer 'headline)
+        'headline
+      (lambda (h)
+        (eq (org-element-property :todo-type h)
+            'todo))
+      nil 'first-match))
+
+  (defun roam-extra:update-todo-tag ()
+  "Update TODO tag in the current buffer."
+  (when (and (not (active-minibuffer-window))
+             (org-roam-file-p))
+    (org-with-point-at 1
+      (let* ((tags (roam-extra:get-filetags))
+             (is-todo (roam-extra:todo-p)))
+        (cond ((and is-todo (not (seq-contains-p tags "todo")))
+               (roam-extra:add-filetag "todo"))
+              ((and (not is-todo) (seq-contains-p tags "todo"))
+               (roam-extra:del-filetag "todo")))))))
+
+  (defun roam-extra:todo-files ()
+    "Return a list of roam files containing todo tag."
+    (org-roam-db-sync)
+    (let ((todo-nodes (seq-filter (lambda (n)
+                                    (seq-contains-p (org-roam-node-tags n) "todo"))
+                                  (org-roam-node-list))))
+      (seq-uniq (seq-map #'org-roam-node-file todo-nodes))))
+
+  (defun roam-extra:update-todo-files (&rest _)
+    "Update the value of `org-agenda-files'."
+    (setq org-agenda-files (roam-extra:todo-files)))
+
+  ;; Find all todo files before org-agenda or org-todo-list
+  (advice-add 'org-agenda :before #'roam-extra:update-todo-files)
+  (advice-add 'org-todo-list :before #'roam-extra:update-todo-files)
+  :hook
+  (org-mode . org-roam-db-autosync-mode) ; Sync automatically
+  (find-file . roam-extra:update-todo-tag)
+  (before-save . roam-extra:update-todo-tag)
+  ;; Bug? Capturing an org-roam-daily seems to sync just the dailies
+  ;; directory in the db, syncing again afterwards fixes
+  (org-capture-after-finalize . org-roam-db-sync)
+  :custom
+  (org-roam-directory (file-truename "~/org-roam"))
+  (org-roam-dailies-directory org-roam-directory) ; TESTING, seems to be discouraged
+  (org-roam-dailies-capture-templates
+   '(("d" "default" entry
+      "* %?"
+      :target (file+head "%<%Y-%m-%d>.org"
+                         "#+title: %<%Y-%m-%d>\n"))))
+  :bind
+  (("C-c n f"   . 'org-roam-node-find)
+   ("C-c n u i" . 'org-roam-ui-open)
+   ("C-c n d c" . 'org-roam-dailies-capture-today)
+   ("C-c n d t" . 'org-roam-dailies-goto-today)
+   ("C-c n i" . 'org-roam-node-insert)
+   :map org-mode-map
+   ("C-c n l" . 'org-roam-buffer-toggle)))
 
 
 ;; ---------- Window ---------- ;;
@@ -204,8 +286,7 @@
   (dired-kill-when-opening-new-dired-buffer t)
   ;; Show symlink targets in hide-details-mode
   (dired-hide-details-hide-symlink-targets nil)
-  :bind
-  (:map dired-mode-map ("^" . dired-up-directory)))
+  :bind (:map dired-mode-map ("^" . dired-up-directory)))
 
 (use-package nerd-icons-dired
   :hook (dired-mode . nerd-icons-dired-mode))
@@ -358,7 +439,8 @@
   :custom-face (avy-background-face ((t :inherit shadow))) ; Set background color for selecting
   :bind
   (("H-i" . avy-goto-char-2) ; C-i
-   :map isearch-mode-map ("H-i" . avy-isearch)))
+   :map isearch-mode-map
+   ("H-i" . avy-isearch)))
 
 
 ;; ---------- Terminal Emulator ---------- ;;
@@ -368,7 +450,8 @@
   :bind
   (("s-T" . vterm)
    ("s-t" . vterm-other-window)
-   (:map vterm-mode-map ("C-y" . vterm-yank)))
+   :map vterm-mode-map
+   ("C-y" . vterm-yank))
   :custom
   (vterm-clear-scrollback-when-clearing t) ; Completely clear vterm on C-l 
   (vterm-min-window-width 60))
@@ -441,8 +524,7 @@
    (treesit-install-language-grammar 'haskell)))
 
 (use-package consult-hoogle
-  :ensure t
-  )
+  :after haskell-ts-mode)
 
 ;; ;; Agda 2.7.0.1
 ;; Recompile if reinstalling agda-mode
