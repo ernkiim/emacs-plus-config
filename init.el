@@ -9,6 +9,7 @@
 (require 'package)
 (add-to-list 'package-archives '("gnu"    . "https://elpa.gnu.org/packages/"))
 (add-to-list 'package-archives '("melpa"  . "https://melpa.org/packages/"))
+(add-to-list 'load-path "~/.emacs.d/elisp")
 (package-initialize)
 
 (unless (package-installed-p 'use-package)
@@ -26,6 +27,8 @@
 ;; Misc. preferences
 (use-package emacs
   :config
+  ;; Theme
+  (use-package dracula-theme)
   ;; Intercept startup message
   (defun display-startup-echo-area-message ()
     (message ""))
@@ -41,12 +44,7 @@
    ("C-<wheel-up>"   . nil)  ; Momentum can trigger scroll wheel bindings
    ("C-<wheel-down>" . nil)
    ("C-." . scroll-up-line)
-   ("C-," . scroll-down-line)
-   ;; Spotify bindings
-   ("C-c C-s"   . spotify)
-   ("C-c C-SPC" . spotify-pause-resume)
-   ("C-c C-n"   . spotify-next)
-   ("C-c C-p"   . spotify-prev))
+   ("C-," . scroll-down-line))
 
   :custom
   ;; start on vterm buffer
@@ -76,18 +74,24 @@
   ;; This is pretty neat
   (show-paren-context-when-offscreen 'overlay) ; Emacs 29
   :hook
-  ((after-init . (lambda ()     ; start dedicated "spotify" vterm buffer
-                   (load "~/.emacs.d/spotify-player.el" nil t)
-                   (spotify-init)))
-   (after-init . pixel-scroll-precision-mode)
+  ((after-init . pixel-scroll-precision-mode)
    (after-init . (lambda ()
                    "intercept C-i, decode to H-i instead of TAB"
                    (define-key input-decode-map
                                (kbd "C-i")
                                (kbd "H-i"))))))
 
-;; Theme
-(use-package dracula-theme)
+;; Spotify cli integration
+(use-package spotify-player
+  :ensure nil
+  :hook
+  (after-init . spotify-init)
+  :bind
+  (("C-c C-s"   . spotify)
+   ("C-c C-SPC" . spotify-pause-resume)
+   ("C-c C-n"   . spotify-next)
+   ("C-c C-p"   . spotify-prev)))
+
 
 ;; Padding
 (use-package spacious-padding
@@ -126,84 +130,25 @@
 ;; ---------- Org ---------- ;;
 
 (use-package org
+  :config
+  (message "org loaded")
   :custom
-  (org-log-done-time 'time) ; Log the time when you finish a TODO item
-  (org-return-follows-link t) ; Follow link with RET
-  (org-latex-create-formula-image-program 'dvisvgm) ; Need to set this manually for sharp previews
+  ;; Let RET act on links
+  (org-return-follows-link t)
+  ;; Need to set LaTeX preview generation program manually
+  (org-latex-create-formula-image-program 'dvisvgm)
   :hook
-  after-init
+  ;; IDE-like smart indentation
   (org-mode . org-indent-mode)
-  (org-mode . visual-line-mode)
-  :bind
-  (("C-c t l" . org-todo-list)))
+  ;; Wrap lines preserving words, let line-sensitive commands work visually
+  (org-mode . visual-line-mode))
 
 (use-package org-roam
-  :after org
   :config
-  (defun roam-extra:get-filetags ()
-    (split-string (or (org-roam-get-keyword "filetags") "")))
-
-  (defun roam-extra:add-filetag (tag)
-    (let* ((new-tags (cons tag (roam-extra:get-filetags)))
-           (new-tags-str (combine-and-quote-strings new-tags)))
-      (org-roam-set-keyword "filetags" new-tags-str)))
-
-  (defun roam-extra:del-filetag (tag)
-    (let* ((new-tags (seq-difference (roam-extra:get-filetags) `(,tag)))
-           (new-tags-str (combine-and-quote-strings new-tags)))
-      (org-roam-set-keyword "filetags" new-tags-str)))
-
-  (defun roam-extra:todo-p ()
-    "Return non-nil if current buffer has any TODO entry.
-
-TODO entries marked as done are ignored, meaning the this
-function returns nil if current buffer contains only completed
-tasks."
-    (org-element-map
-        (org-element-parse-buffer 'headline)
-        'headline
-      (lambda (h)
-        (eq (org-element-property :todo-type h)
-            'todo))
-      nil 'first-match))
-
-  (defun roam-extra:update-todo-tag ()
-  "Update TODO tag in the current buffer."
-  (when (and (not (active-minibuffer-window))
-             (org-roam-file-p))
-    (org-with-point-at 1
-      (let* ((tags (roam-extra:get-filetags))
-             (is-todo (roam-extra:todo-p)))
-        (cond ((and is-todo (not (seq-contains-p tags "todo")))
-               (roam-extra:add-filetag "todo"))
-              ((and (not is-todo) (seq-contains-p tags "todo"))
-               (roam-extra:del-filetag "todo")))))))
-
-  (defun roam-extra:todo-files ()
-    "Return a list of roam files containing todo tag."
-    (org-roam-db-sync)
-    (let ((todo-nodes (seq-filter (lambda (n)
-                                    (seq-contains-p (org-roam-node-tags n) "todo"))
-                                  (org-roam-node-list))))
-      (seq-uniq (seq-map #'org-roam-node-file todo-nodes))))
-
-  (defun roam-extra:update-todo-files (&rest _)
-    "Update the value of `org-agenda-files'."
-    (setq org-agenda-files (roam-extra:todo-files)))
-
-  ;; Find all todo files before org-agenda or org-todo-list
-  (advice-add 'org-agenda :before #'roam-extra:update-todo-files)
-  (advice-add 'org-todo-list :before #'roam-extra:update-todo-files)
-  :hook
-  (org-mode . org-roam-db-autosync-mode) ; Sync automatically
-  (find-file . roam-extra:update-todo-tag)
-  (before-save . roam-extra:update-todo-tag)
-  ;; Bug? Capturing an org-roam-daily seems to sync just the dailies
-  ;; directory in the db, syncing again afterwards fixes
-  (org-capture-after-finalize . org-roam-db-sync)
+  (message "org-roam loaded")
   :custom
-  ;; Set the home directory for all roam nodes
-  (org-roam-directory (file-truename "~/org-roam")) ; default
+  ;; Set the directory for all roam nodes (default "~/org-roam")
+  (org-roam-directory (file-truename "~/org-roam"))
   ;; Set the subdirectory for daily captures
   (org-roam-dailies-directory "daily/") ; default
   ;; Set the template for daily captures 
@@ -212,15 +157,29 @@ tasks."
       "* %?"
       :target (file+head "%<%Y-%m-%d>.org"
                          "#+title: %<%Y-%m-%d>\n"))))
+  :hook
+  ;; Update the database automatically
+  (org-mode . org-roam-db-autosync-mode)
   :bind
-  (("C-c n f"   . 'org-roam-node-find)
-   ("C-c n u i" . 'org-roam-ui-open)
-   ("C-c n d c" . 'org-roam-dailies-capture-today)
-   ("C-c n d t" . 'org-roam-dailies-goto-today)
-   ("C-c n i" . 'org-roam-node-insert)
+  (("C-c n f" . org-roam-node-find)
+   ("C-c n i" . org-roam-node-insert)
+   ("C-c n r" . org-roam-node-random)
+   ("C-c n c" . org-roam-capture-today)
+   ("C-c n t" . org-roam-dailies-goto-today)
+   ("C-c n u" . org-roam-ui-open)
    :map org-mode-map
-   ("C-c n l" . 'org-roam-buffer-toggle)))
+   ("C-c n l" . org-roam-buffer-toggle)))
 
+(use-package org-roam-agenda
+  :ensure nil
+  :config
+  (message "org-roam-agenda loaded")
+  :hook
+  ;; Add and remove 'todo' filetag automatically
+  (before-save . org-roam-agenda-update-todo-tag)
+  :bind
+  (("C-c a" . org-roam-agenda-open)
+   ("C-c t" . org-roam-agenda-todo-list)))
 
 ;; ---------- Window ---------- ;;
 
@@ -262,7 +221,8 @@ tasks."
 ;; ---------- Magit ---------- ;;
 
 (use-package magit
-  :init
+  :defer 15
+  :config
   ;; Use child clients for commit messages
   (use-package with-editor
     :defer t)
@@ -383,6 +343,7 @@ tasks."
                         (lambda ()
                           (mark-defun)
                           (comment-region (region-beginning) (region-end)))))
+
   (defun avy-action-kill-whole-line (pt)
     "Kill text"
     (save-excursion
@@ -412,7 +373,7 @@ tasks."
   (defun avy-action-teleport-whole-line (pt)
     (avy-action-kill-whole-line pt)
     (save-excursion (yank)) t)
-  
+
   (defun avy-action-mark-to-char (pt)
     (activate-mark)
     (goto-char pt))
