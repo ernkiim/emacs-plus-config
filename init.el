@@ -130,8 +130,6 @@
 ;; ---------- Org ---------- ;;
 
 (use-package org
-  :config
-  (message "org loaded")
   :custom
   ;; Let RET act on links
   (org-return-follows-link t)
@@ -144,8 +142,6 @@
   (org-mode . visual-line-mode))
 
 (use-package org-roam
-  :config
-  (message "org-roam loaded")
   :custom
   ;; Set the directory for all roam nodes (default "~/org-roam")
   (org-roam-directory (file-truename "~/org-roam"))
@@ -164,7 +160,7 @@
   (("C-c n f" . org-roam-node-find)
    ("C-c n i" . org-roam-node-insert)
    ("C-c n r" . org-roam-node-random)
-   ("C-c n c" . org-roam-capture-today)
+   ("C-c n c" . org-roam-dailies-capture-today)
    ("C-c n t" . org-roam-dailies-goto-today)
    ("C-c n u" . org-roam-ui-open)
    :map org-mode-map
@@ -172,8 +168,6 @@
 
 (use-package org-roam-agenda
   :ensure nil
-  :config
-  (message "org-roam-agenda loaded")
   :hook
   ;; Add and remove 'todo' filetag automatically
   (before-save . org-roam-agenda-update-todo-tag)
