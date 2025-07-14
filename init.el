@@ -23,18 +23,17 @@
 
 ;; ---------- Preferences ---------- ;;
 
-;; Misc. preferences
 (use-package emacs
   :config
+  ;; Theme
+  (use-package dracula-theme)
   ;; Intercept startup message
   (defun display-startup-echo-area-message ()
     (message ""))
   ;; Delete files into trash bin (when using dired, etc.)
   (setq delete-by-moving-to-trash t)
   (when (eq system-type 'darwin)
-      (setq trash-directory "~/.Trash"))
-
-  (defvar first-call t)
+    (setq trash-directory "~/.Trash"))
   :bind
   (("M-o" . other-window)
    ("M-u" . up-list)
@@ -47,7 +46,6 @@
    ("C-c C-SPC" . spotify-pause-resume)
    ("C-c C-n"   . spotify-next)
    ("C-c C-p"   . spotify-prev))
-
   :custom
   ;; start on vterm buffer
   (initial-buffer-choice 'vterm)
@@ -76,22 +74,22 @@
   ;; This is pretty neat
   (show-paren-context-when-offscreen 'overlay) ; Emacs 29
   :hook
-  ((after-init . (lambda ()     ; start dedicated "spotify" vterm buffer
-                   (load "~/.emacs.d/spotify-player.el" nil t)
-                   (spotify-init)))
+  (;; (after-init . (lambda ()     ; start dedicated "spotify" vterm buffer
+   ;;                 (load "~/.emacs.d/spotify-player.el" nil t)
+   ;;                 (spotify-init)))
    (after-init . pixel-scroll-precision-mode)
    (after-init . (lambda ()
                    "intercept C-i, decode to H-i instead of TAB"
                    (define-key input-decode-map
                                (kbd "C-i")
                                (kbd "H-i"))))))
-
-;; Theme
-(use-package dracula-theme)
+;; (use-package spotify-player
+;;   :ensure nil
+;;   :hook
+;;   (after-init . spotify-init))
 
 ;; Padding
 (use-package spacious-padding
-  :hook after-init
   :custom
   (spacious-padding-subtle-mode-line '(:mode-line-inactive "#282a36"))
   (spacious-padding-widths '( :internal-border-width 10
@@ -101,7 +99,7 @@
                               :right-divider-width 20
                               :scroll-bar-width 8)))
 
-;; Server-specific config
+;; Server-specific configuration
 (use-package server
   :custom
   (server-client-instructions nil)
@@ -112,96 +110,47 @@
                                            (kbd "C-i")
                                            (kbd "H-i")))))
 
-
 ;; Auto pair balanced expressions.
 (use-package electric-pair
   :hook after-init)
 
 ;; Much faster than doom-modeline
-(use-package mood-line                  
+(use-package mood-line
   :hook after-init
-  :custom (mood-line-glyph-alist mood-line-glyphs-fira-code))
+  :custom
+  (mood-line-glyph-alist mood-line-glyphs-fira-code))
 
 
 ;; ---------- Org ---------- ;;
 
-(use-package org
-  :custom
-  (org-log-done-time 'time) ; Log the time when you finish a TODO item
-  (org-return-follows-link t) ; Follow link with RET
-  (org-latex-create-formula-image-program 'dvisvgm) ; Need to set this manually for sharp previews
-  :hook
-  after-init
-  (org-mode . org-indent-mode)
-  (org-mode . visual-line-mode)
-  :bind
-  (("C-c t l" . org-todo-list)))
-
 (use-package org-roam
-  :after org
+  :demand t
   :config
-  (defun roam-extra:get-filetags ()
-    (split-string (or (org-roam-get-keyword "filetags") "")))
-
-  (defun roam-extra:add-filetag (tag)
-    (let* ((new-tags (cons tag (roam-extra:get-filetags)))
-           (new-tags-str (combine-and-quote-strings new-tags)))
-      (org-roam-set-keyword "filetags" new-tags-str)))
-
-  (defun roam-extra:del-filetag (tag)
-    (let* ((new-tags (seq-difference (roam-extra:get-filetags) `(,tag)))
-           (new-tags-str (combine-and-quote-strings new-tags)))
-      (org-roam-set-keyword "filetags" new-tags-str)))
-
-  (defun roam-extra:todo-p ()
-    "Return non-nil if current buffer has any TODO entry.
-
-TODO entries marked as done are ignored, meaning the this
-function returns nil if current buffer contains only completed
-tasks."
-    (org-element-map
-        (org-element-parse-buffer 'headline)
-        'headline
-      (lambda (h)
-        (eq (org-element-property :todo-type h)
-            'todo))
-      nil 'first-match))
-
-  (defun roam-extra:update-todo-tag ()
-  "Update TODO tag in the current buffer."
-  (when (and (not (active-minibuffer-window))
-             (org-roam-file-p))
-    (org-with-point-at 1
-      (let* ((tags (roam-extra:get-filetags))
-             (is-todo (roam-extra:todo-p)))
-        (cond ((and is-todo (not (seq-contains-p tags "todo")))
-               (roam-extra:add-filetag "todo"))
-              ((and (not is-todo) (seq-contains-p tags "todo"))
-               (roam-extra:del-filetag "todo")))))))
-
-  (defun roam-extra:todo-files ()
-    "Return a list of roam files containing todo tag."
-    (org-roam-db-sync)
-    (let ((todo-nodes (seq-filter (lambda (n)
-                                    (seq-contains-p (org-roam-node-tags n) "todo"))
-                                  (org-roam-node-list))))
-      (seq-uniq (seq-map #'org-roam-node-file todo-nodes))))
-
-  (defun roam-extra:update-todo-files (&rest _)
-    "Update the value of `org-agenda-files'."
-    (setq org-agenda-files (roam-extra:todo-files)))
-
+  (use-package org
+    :demand t
+    :custom
+    (org-log-done-time 'time) ; Log the time when you finish a TODO item
+    (org-return-follows-link t) ; Follow link with RET
+    (org-latex-create-formula-image-program 'dvisvgm) ; Need to set this manually for sharp previews
+    :hook
+    (org-mode . org-indent-mode))
+  ;; Load todo filetagging code
+  (load "~/.emacs.d/roam-agenda.el" nil t)
+  ;; Build agenda initially
+  (roam-extra:update-todo-files)
   ;; Find all todo files before org-agenda or org-todo-list
   (advice-add 'org-agenda :before #'roam-extra:update-todo-files)
   (advice-add 'org-todo-list :before #'roam-extra:update-todo-files)
   :hook
-  (org-mode . org-roam-db-autosync-mode) ; Sync automatically
   (find-file . roam-extra:update-todo-tag)
   (before-save . roam-extra:update-todo-tag)
+  (org-mode . org-roam-db-autosync-mode) ; Sync automatically
   ;; Bug? Capturing an org-roam-daily seems to sync just the dailies
   ;; directory in the db, syncing again afterwards fixes
   (org-capture-after-finalize . org-roam-db-sync)
   :custom
+  ;; Don't bookmark (important for deferring)
+  (org-capture-bookmark nil)
   ;; Set the home directory for all roam nodes
   (org-roam-directory (file-truename "~/org-roam")) ; default
   ;; Set the subdirectory for daily captures
@@ -213,7 +162,8 @@ tasks."
       :target (file+head "%<%Y-%m-%d>.org"
                          "#+title: %<%Y-%m-%d>\n"))))
   :bind
-  (("C-c n f"   . 'org-roam-node-find)
+  (("C-c t" . org-todo-list)
+   ("C-c n f"   . 'org-roam-node-find)
    ("C-c n u i" . 'org-roam-ui-open)
    ("C-c n d c" . 'org-roam-dailies-capture-today)
    ("C-c n d t" . 'org-roam-dailies-goto-today)
@@ -225,7 +175,6 @@ tasks."
 ;; ---------- Window ---------- ;;
 
 (use-package winum
-  :hook after-init
   :config
   (defun my-winum-assign ()
     "Manually assign number based on buffer"
