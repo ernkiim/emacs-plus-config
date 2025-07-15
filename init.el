@@ -36,8 +36,6 @@
   (setq delete-by-moving-to-trash t)
   (when (eq system-type 'darwin)
       (setq trash-directory "~/.Trash"))
-
-  (defvar first-call t)
   :bind
   (("M-o" . other-window)
    ("M-u" . up-list)
@@ -142,6 +140,19 @@
   (org-mode . visual-line-mode))
 
 (use-package org-roam
+  :config
+  (defun org-roam-tag-toggle (tag)
+    "Toggle TAG on the node at point"
+    (interactive
+     (list (let ((crm-separator "[ 	]*:[ 	]*"))
+             (completing-read "Tag: " (org-roam-tag-completions)))))
+    (let ((current-tags (split-string (or (cadr (assoc "FILETAGS"
+                                                       (org-collect-keywords '("filetags"))))
+                                          "")
+                                      ":" 'omit-nulls)))
+      (if (member tag current-tags)
+          (org-roam-tag-remove (list tag))
+      (org-roam-tag-add (list tag)))))
   :custom
   ;; Set the directory for all roam nodes (default "~/org-roam")
   (org-roam-directory (file-truename "~/org-roam"))
@@ -161,8 +172,9 @@
    ("C-c n i" . org-roam-node-insert)
    ("C-c n r" . org-roam-node-random)
    ("C-c n c" . org-roam-dailies-capture-today)
-   ("C-c n t" . org-roam-dailies-goto-today)
+   ("C-c n d" . org-roam-dailies-goto-today)
    ("C-c n u" . org-roam-ui-open)
+   ("C-c n t" . org-roam-tag-toggle)
    :map org-mode-map
    ("C-c n l" . org-roam-buffer-toggle)))
 

@@ -21,9 +21,10 @@ tasks."
   (when (and (not (active-minibuffer-window))
              (org-roam-file-p))
     (org-with-point-at 1
-      (if (org-roam-agenda-todo-p)
+      (if (org-agenda-has-todo-p)
           (org-roam-tag-add '("todo"))
-        (org-roam-tag-remove '("todo"))))))
+        (when (org-collect-keywords '("filetags"))
+          (org-roam-tag-remove '("todo")))))))
 
 (defun org-roam-agenda-todo-files ()
   "Return a list of roam files containing todo tag."
