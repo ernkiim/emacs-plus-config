@@ -2,19 +2,6 @@
 
 (require 'org)
 
-(defun org-roam-agenda-get-filetags ()
-  (split-string (or (org-roam-get-keyword "filetags") "")))
-
-(defun org-roam-agenda-add-filetag (tag)
-  (let* ((new-tags (cons tag (org-roam-agenda-get-filetags)))
-         (new-tags-str (combine-and-quote-strings new-tags)))
-    (org-roam-set-keyword "filetags" new-tags-str)))
-
-(defun org-roam-agenda-del-filetag (tag)
-  (let* ((new-tags (seq-difference (org-roam-agenda-get-filetags) `(,tag)))
-         (new-tags-str (combine-and-quote-strings new-tags)))
-    (org-roam-set-keyword "filetags" new-tags-str)))
-
 (defun org-roam-agenda-todo-p ()
   "Return non-nil if current buffer has any TODO entry.
 
@@ -34,12 +21,9 @@ tasks."
   (when (and (not (active-minibuffer-window))
              (org-roam-file-p))
     (org-with-point-at 1
-      (let* ((tags (org-roam-agenda-get-filetags))
-             (is-todo (org-roam-agenda-todo-p)))
-        (cond ((and is-todo (not (seq-contains-p tags "todo")))
-               (org-roam-agenda-add-filetag "todo"))
-              ((and (not is-todo) (seq-contains-p tags "todo"))
-               (org-roam-agenda-del-filetag "todo")))))))
+      (if (org-roam-agenda-todo-p)
+          (org-roam-tag-add '("todo"))
+        (org-roam-tag-remove '("todo"))))))
 
 (defun org-roam-agenda-todo-files ()
   "Return a list of roam files containing todo tag."

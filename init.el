@@ -169,7 +169,7 @@
 (use-package org-roam-agenda
   :ensure nil
   :hook
-  ;; Add and remove 'todo' filetag automatically
+  ;; Add and remove 'todo' filetag automatically when saving
   (before-save . org-roam-agenda-update-todo-tag)
   :bind
   (("C-c a" . org-roam-agenda-open)
