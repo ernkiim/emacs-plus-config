@@ -21,7 +21,7 @@ tasks."
   (when (and (not (active-minibuffer-window))
              (org-roam-file-p))
     (org-with-point-at 1
-      (if (org-agenda-has-todo-p)
+      (if (org-roam-agenda-todo-p)
           (org-roam-tag-add '("todo"))
         (when (org-collect-keywords '("filetags"))
           (org-roam-tag-remove '("todo")))))))

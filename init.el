@@ -35,7 +35,7 @@
   ;; Delete files into trash bin (when using dired, etc.)
   (setq delete-by-moving-to-trash t)
   (when (eq system-type 'darwin)
-      (setq trash-directory "~/.Trash"))
+    (setq trash-directory "~/.Trash"))
   :bind
   (("M-o" . other-window)
    ("M-u" . up-list)
