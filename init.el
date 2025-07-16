@@ -141,6 +141,9 @@
 
 (use-package org-roam
   :config
+  ;; Update the database automatically
+  (org-roam-db-autosync-mode)
+  
   (defun org-roam-tag-toggle (tag)
     "Toggle TAG on the node at point"
     (interactive
@@ -152,7 +155,7 @@
                                       ":" 'omit-nulls)))
       (if (member tag current-tags)
           (org-roam-tag-remove (list tag))
-      (org-roam-tag-add (list tag)))))
+        (org-roam-tag-add (list tag)))))
   :custom
   ;; Set the directory for all roam nodes (default "~/org-roam")
   (org-roam-directory (file-truename "~/org-roam"))
@@ -164,9 +167,6 @@
       "* %?"
       :target (file+head "%<%Y-%m-%d>.org"
                          "#+title: %<%Y-%m-%d>\n"))))
-  :hook
-  ;; Update the database automatically
-  (org-mode . org-roam-db-autosync-mode)
   :bind
   (("C-c n f" . org-roam-node-find)
    ("C-c n i" . org-roam-node-insert)
