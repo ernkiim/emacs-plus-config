@@ -122,7 +122,9 @@
 ;; Much faster than doom-modeline
 (use-package mood-line                  
   :hook after-init
-  :custom (mood-line-glyph-alist mood-line-glyphs-fira-code))
+  :custom
+  
+  (mood-line-glyph-alist mood-line-glyphs-fira-code))
 
 
 ;; ---------- Org ---------- ;;
@@ -174,8 +176,8 @@
    ("C-c n c" . org-roam-dailies-capture-today)
    ("C-c n d" . org-roam-dailies-goto-today)
    ("C-c n u" . org-roam-ui-open)
-   ("C-c n t" . org-roam-tag-toggle)
    :map org-mode-map
+   ("C-c n t" . org-roam-tag-toggle)
    ("C-c n l" . org-roam-buffer-toggle)))
 
 (use-package org-roam-agenda
@@ -533,11 +535,13 @@
    '((" " (mood-line-segment-modal) " "
       (or (mood-line-segment-buffer-status) " ") " "
       (mood-line-segment-buffer-name) "  " (mood-line-segment-anzu)
-      "  " (mood-line-segment-multiple-cursors) "  ")
+      "  " (mood-line-segment-multiple-cursors) "  "
+      (format-mode-line "%l:%c" 'mood-line-unimportant) " ")
      ((mood-line-segment-vc) "  " (mood-line-segment-major-mode) "  "
       (mood-line-segment-misc-info) "  " (mood-line-segment-checker)
-      "  " (mood-line-segment-process) " "
+      "  " (mood-line-segment-process) "  "
       (format winum-format (winum-get-number-string)))))
+ '(org-preview-latex-default-process 'dvisvgm nil nil "Customized with use-package org")
  '(package-selected-packages
    '(auctex avy consult consult-hoogle corfu dracula-theme
             haskell-ts-mode hide-mode-line magit marginalia mood-line
@@ -547,14 +551,6 @@
             spacious-padding tex-parens vertico vertico-posframe
             vertico-quick vterm winum))
  '(tool-bar-mode nil))
-
-;;; init.el ends here
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
 
 ;; ---------- End ---------- ;;
 
