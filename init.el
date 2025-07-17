@@ -452,9 +452,7 @@
   (TeX-source-correlate-start-server t) 
   (TeX-save-query nil) ; Don't save query when running command list
   (TeX-electric-math '("\\(" . "\\)")) ; Insert '\(\)' for '$$' automatically
-  (LaTeX-electric-left-right-brace t)
-  :bind
-  (("M-u" . tex-parens-up-list))) ; Balance braces automatically
+  (LaTeX-electric-left-right-brace t))
 
 
 
