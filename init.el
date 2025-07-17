@@ -171,6 +171,8 @@
       "* %?"
       :target (file+head "%<%Y-%m-%d>.org"
                          "#+title: %<%Y-%m-%d>\n"))))
+  :hook
+  (org-roam-capture-new-node-hook . (lambda () (org-roam-tag-add '("draft"))))
   :bind
   (("C-c n f" . org-roam-node-find)
    ("C-c n i" . org-roam-node-insert)
@@ -434,14 +436,16 @@
 (use-package auctex
   :commands LaTeX-mode
   :hook
+  ;; Revert PDF viewing buffer every time we recompile
   (TeX-after-compilation-finished-functions . TeX-revert-document-buffer)
+  ;; Org-like heading-aware folding and navigation
+  (LaTeX-mode . outline-minor-mode)
+  ;; Unicode display of symbols
+  (LaTex-mode . prettify-symbols-mode)
   :config
-  ;; Treat environments, delimiters as balanced expressions for navigation
-  ;; FANTASTIC
+  ;; Treat environments, delimiters as balanced expressions for navigation, FANTASTIC
   (use-package tex-parens
     :hook LaTeX-mode)
-  ;; (add-hook 'TeX-after-compilation-finished-functions
-  ;;           #'TeX-revert-document-buffer)
   :custom
   (TeX-view-program-selection '((output-pdf "PDF Tools"))) ; View in pdf-tools
   (TeX-view-program-list '(("PDF Tools" TeX-pdf-tools-sync-view))) ; Sync
