@@ -21,6 +21,8 @@
         use-package-expand-minimally t
         use-package-compute-statistics t))
 
+(if (daemonp)
+    (setq use-package-always-demand t))
 
 ;; ---------- Preferences ---------- ;;
 
@@ -116,8 +118,8 @@
 
 
 ;; Auto pair balanced expressions.
-(use-package electric-pair
-  :hook after-init)
+(use-package elec-pair
+  :hook (after-init . electric-pair-mode))
 
 ;; Much faster than doom-modeline
 (use-package mood-line                  
@@ -229,11 +231,9 @@
 ;; ---------- Magit ---------- ;;
 
 (use-package magit
-  :defer 15
   :config
   ;; Use child clients for commit messages
-  (use-package with-editor
-    :defer t)
+  (use-package with-editor)
   :custom
   ;; Add magit-status, -dispatch, and -file-dispatch actions to global
   (magit-maybe-define-global-key-bindings recommended)
@@ -435,7 +435,11 @@
   :commands LaTeX-mode
   :hook
   (TeX-after-compilation-finished-functions . TeX-revert-document-buffer)
-  ;; :config
+  :config
+  ;; Treat environments, delimiters as balanced expressions for navigation
+  ;; FANTASTIC
+  (use-package tex-parens
+    :hook LaTeX-mode)
   ;; (add-hook 'TeX-after-compilation-finished-functions
   ;;           #'TeX-revert-document-buffer)
   :custom
@@ -444,13 +448,11 @@
   (TeX-source-correlate-start-server t) 
   (TeX-save-query nil) ; Don't save query when running command list
   (TeX-electric-math '("\\(" . "\\)")) ; Insert '\(\)' for '$$' automatically
-  (LaTeX-electric-left-right-brace t)) ; Balance braces automatically
+  (LaTeX-electric-left-right-brace t)
+  :bind
+  (("M-u" . tex-parens-up-list))) ; Balance braces automatically
 
-;; Treat environments, delimiters as balanced expressions for navigation
-;; FANTASTIC
-(use-package tex-parens
-  :hook LaTeX-mode
-  :bind (:map TeX-mode-map ("M-u" . tex-parens-up-list)))
+
 
 ;; Pdf viewer
 (use-package pdf-tools
@@ -543,7 +545,7 @@
       (format winum-format (winum-get-number-string)))))
  '(org-preview-latex-default-process 'dvisvgm nil nil "Customized with use-package org")
  '(package-selected-packages
-   '(auctex avy consult consult-hoogle corfu dracula-theme
+   '(auctex avy consult consult-hoogle corfu dracula-theme esup
             haskell-ts-mode hide-mode-line magit marginalia mood-line
             nerd-icons-completion nerd-icons-dired orderless org-roam
             org-roam-ui pdf-tools saveplace-pdf-view sbt-mode
@@ -558,3 +560,9 @@
       gc-cons-percentage 0.5)
 
 (provide 'init)
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
