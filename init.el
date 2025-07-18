@@ -34,6 +34,18 @@
   ;; Intercept startup message
   (defun display-startup-echo-area-message ()
     (message ""))
+
+  (defun delete-visited-file (buffer-name)
+  "Delete the file visited by the buffer named BUFFER-NAME."
+  (interactive "bDelete file visited by buffer ")
+  (let* ((buffer (get-buffer buffer-name))
+         (filename (buffer-file-name buffer)))
+    (when buffer
+      (when (and filename
+                 (file-exists-p filename))
+        (delete-file filename))
+      (kill-buffer buffer))))
+  
   ;; Delete files into trash bin (when using dired, etc.)
   (setq delete-by-moving-to-trash t)
   (when (eq system-type 'darwin)
@@ -141,7 +153,9 @@
   ;; IDE-like smart indentation
   (org-mode . org-indent-mode)
   ;; Wrap lines preserving words, let line-sensitive commands work visually
-  (org-mode . visual-line-mode))
+  (org-mode . visual-line-mode)
+  ;; Displays LaTeX math symbols using unicode
+  (org-mode . org-toggle-pretty-entities))
 
 (use-package org-roam
   :config
@@ -171,8 +185,6 @@
       "* %?"
       :target (file+head "%<%Y-%m-%d>.org"
                          "#+title: %<%Y-%m-%d>\n"))))
-  :hook
-  (org-roam-capture-new-node-hook . (lambda () (org-roam-tag-add '("draft"))))
   :bind
   (("C-c n f" . org-roam-node-find)
    ("C-c n i" . org-roam-node-insert)
