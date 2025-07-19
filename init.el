@@ -21,6 +21,7 @@
         use-package-expand-minimally t
         use-package-compute-statistics t))
 
+;; Load packages eagerly on daemon start
 (if (daemonp)
     (setq use-package-always-demand t))
 
@@ -30,7 +31,8 @@
 (use-package emacs
   :config
   ;; Theme
-  (use-package dracula-theme)
+  (use-package dracula-theme
+    :config (load-theme 'dracula t))
   ;; Intercept startup message
   (defun display-startup-echo-area-message ()
     (message ""))
@@ -70,6 +72,8 @@
   ;; Horizontal scrolling (in macos direction)
   (mouse-wheel-tilt-scroll t)
   (mouse-wheel-flip-direction t)
+  ;; Pixel-based scrolling
+  (pixel-scroll-precision-mode t)
   ;; Silence
   (ring-bell-function 'ignore)
   ;; No line wrapping
@@ -78,6 +82,8 @@
   (indent-tabs-mode nil)
   ;; Suppress annoying little confirm windows
   (use-dialog-box nil)
+  ;; Smart balanced expression insertion
+  (electric-pair-mode t)
   ;; Hide startup mess
   (inhibit-startup-screen t)
   (initial-scratch-message "")
@@ -86,24 +92,11 @@
   ;; This is pretty neat
   (show-paren-context-when-offscreen 'overlay) ; Emacs 29
   :hook
-  ((after-init . pixel-scroll-precision-mode)
-   (after-init . (lambda ()
+  ((after-init . (lambda ()
                    "intercept C-i, decode to H-i instead of TAB"
                    (define-key input-decode-map
                                (kbd "C-i")
                                (kbd "H-i"))))))
-
-;; Spotify cli integration
-(use-package spotify-player
-  :ensure nil
-  :hook
-  (after-init . spotify-init)
-  :bind
-  (("C-c C-s"   . spotify)
-   ("C-c C-SPC" . spotify-pause-resume)
-   ("C-c C-n"   . spotify-next)
-   ("C-c C-p"   . spotify-prev)))
-
 
 ;; Padding
 (use-package spacious-padding
@@ -117,6 +110,18 @@
                               :right-divider-width 20
                               :scroll-bar-width 8)))
 
+
+;; Spotify CLI integration
+(use-package spotify-player
+  :ensure nil
+  :hook
+  (after-init . spotify-init)
+  :bind
+  (("C-c C-s"   . spotify)
+   ("C-c C-SPC" . spotify-pause-resume)
+   ("C-c C-n"   . spotify-next)
+   ("C-c C-p"   . spotify-prev)))
+
 ;; Server-specific config
 (use-package server
   :custom
@@ -129,16 +134,10 @@
                                            (kbd "H-i")))))
 
 
-;; Auto pair balanced expressions.
-(use-package elec-pair
-  :hook (after-init . electric-pair-mode))
-
 ;; Much faster than doom-modeline
 (use-package mood-line                  
   :hook after-init
-  :custom
-  
-  (mood-line-glyph-alist mood-line-glyphs-fira-code))
+  :custom (mood-line-glyph-alist mood-line-glyphs-fira-code))
 
 
 ;; ---------- Org ---------- ;;
@@ -539,7 +538,6 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(custom-enabled-themes '(dracula))
  '(custom-safe-themes
    '("2d74de1cc32d00b20b347f2d0037b945a4158004f99877630afc034a674e3ab7"
      default))
