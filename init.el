@@ -470,6 +470,7 @@
 
 ;; Pdf viewer
 (use-package pdf-tools
+  :load-path "site-lisp/pdf-tools/lisp"
   :magic ("%PDF" . pdf-view-mode)
   :config
   (pdf-tools-install :no-query)
@@ -477,11 +478,6 @@
   :custom
   (pdf-view-resize-factor 1.1)
   (pdf-view-display-size 'fit-page))
-
-(use-package saveplace-pdf-view
-  :after (:any doc-view pdf-tools)
-  :bind (:map pdf-view-mode-map ("s a" . save-place-mode))
-  :demand t)
 
 
 ;; ---------- Programming modes ---------- ;;
