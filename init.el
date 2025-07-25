@@ -396,6 +396,11 @@
   ;; Completely clear terminal on 'C-l'
   (vterm-clear-scrollback-when-clearing t))
 
+;; PDF viewing
+(use-package pdf-tools
+  :magic ("%PDF" . pdf-view-mode)
+  :config
+  (pdf-tools-install :no-query))
 
 ;;; Programming modes
 
@@ -408,8 +413,26 @@
   (treesit-auto-add-to-auto-mode-alist 'all)
   (global-treesit-auto-mode +1))
 
-;; Agda 2.8.0
+;; LaTeX
+(use-package auctex
+  :custom
+  (TeX-auto-save t)
+  (TeX-parse-self t)
+  ;; Use pdf-tools to view output pdf
+  (TeX-view-program-selection '((output-pdf "PDF Tools")))
+  (TeX-view-program-list '(("PDF Tools" TeX-pdf-tools-sync-view)))
+  (TeX-source-correlate-start-server t)
+  :config
+  ;; Navigate environments as balanced delims
+  (use-package tex-parens
+    :hook TeX-mode)
+  ;; Revert pdf after compile
+  (add-hook 'TeX-after-compilation-finished-functions
+	    #'TeX-revert-document-buffer))
 
+
+
+;; Agda 2.8.0
 ;; (defun agda2-load-path ()
 ;;   (let ((coding-system-for-read 'utf-8))
 ;;     (file-name-directory (shell-command-to-string "agda --emacs-mode locate"))))
