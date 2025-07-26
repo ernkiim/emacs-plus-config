@@ -321,8 +321,8 @@
 (use-package vertico
   :hook after-init
   :config
-  (use-package vertico-posframe
-    :hook after-init)
+  (use-package vertico-posframe)
+  (vertico-posframe-mode +1)
   :custom
   ;; Cycle through completions
   (vertico-cycle t))
