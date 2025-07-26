@@ -32,10 +32,11 @@
 (straight-use-package 'use-package)
 
 (use-package use-package
+  :straight nil
   :custom
   ;; Debug
   (use-package-verbose init-file-debug)
-  (use-package-compute-statistics t); init-file-debug)
+  (use-package-compute-statistics init-file-debug)
   ;; Always try to install
   (straight-use-package-by-default t)
   ;; Daemon eagerly loads packages, defer otherwise
@@ -43,7 +44,6 @@
   (use-package-always-demand (daemonp))
   ;; Let imenu see use-package forms
   (use-package-enable-imenu-support t))
-
 
 ;;; Built-in packages
 
@@ -54,6 +54,8 @@
 	 ("C-<wheel-up>" . nil) ; Smooth scroll can trigger these bindings
 	 ("C-<wheel-down>" . nil))
   :init
+  ;; Theme
+  (load-theme 'modus-operandi-tinted)
   ;; Separate 'C-i' from 'TAB' binding by sending 'C-i' to 'H-i'
   (define-key input-decode-map
 	      (kbd "C-i")
@@ -104,6 +106,7 @@
 
 ;; Server-specific config
 (use-package server
+  :straight (:type built-in)
   :hook ((server-after-make-frame . (lambda ()
 				      "input-decode-map is session-local; must redefine for each client"
 				      (define-key input-decode-map
@@ -115,16 +118,6 @@
   :straight (:type built-in)
   :hook ((after-init . pixel-scroll-precision-mode)))
 
-;; Frame display
-(use-package frame
-  :straight (:type built-in)
-  :hook ((after-init . window-divider-mode))
-  :custom
-  (window-divider-default-bottom-width 1)
-  (window-divider-default-places t)
-  (window-divider-default-right-width 1))
-
-;; Files
 (use-package files
   :straight (:type built-in)
   :custom
@@ -231,13 +224,6 @@
 ;; Window switching
 (use-package winum
   :hook after-init
-  :custom
-  ;; Insert window number manually in mood-line
-  (winum-auto-setup-mode-line nil))
-
-;; Minimal mode line
-(use-package mood-line
-  :hook after-init
   :bind
   (("s-0" . winum-select-window-0-or-10)
    ("s-1" . winum-select-window-1)
@@ -250,8 +236,15 @@
    ("s-8" . winum-select-window-8)
    ("s-9" . winum-select-window-9))
   :custom
+  ;; Insert window number manually in mood-line
+  (winum-auto-setup-mode-line nil)
   ;; Minibuffer gets number '0'
-  (winum-auto-assign-0-to-minibuffer t)
+  (winum-auto-assign-0-to-minibuffer t))
+
+;; Minimal mode line
+(use-package mood-line
+  :hook after-init
+  :custom
   ;; Pretty symbols
   (mood-line-glyph-alist mood-line-glyphs-fira-code)
   ;; Format
@@ -308,39 +301,12 @@
   ;; Do not wrap region when expanding snippets
   (yas-wrap-around-region nil))
 
-;; LSP client
-;; Fast third-party alternative to eglot
+;; LSP client; Fast third-party alternative to eglot
 (use-package lsp-bridge
   :straight '(lsp-bridge :type git :host github :repo "manateelazycat/lsp-bridge"
             :files (:defaults "*.el" "*.py" "acm" "core" "langserver" "multiserver" "resources")
             :build (:not compile))
   :hook prog-mode)
-
-;; Corfu completion ui
-(use-package corfu
-  :hook ((prog-mode vterm-mode) . global-corfu-mode)
-  :config
-  (corfu-history-mode +1)
-  :custom
-  ;; Auto show completions
-  (corfu-auto t)
-  (corfu-auto-prefix 2)
-  ;; Cycle through completions
-  (corfu-cycle t)
-  ;; Hide commands in M-x which do not apply to the current mode.
-  (read-extended-command-predicate #'command-completion-default-include-p)
-  ;; Disable ispell
-  (text-mode-ispell-word-completion nil)
-  :bind (:map corfu-map ("M-SPC" . corfu-insert-separator)))
-
-;; Cape provides more capfs
-(use-package cape
-  :bind ("C-c p" . cape-prefix-map)
-  :commands (cape-dabbrev cape-file cape-elisp-block)
-  :init
-  (add-hook 'completion-at-point-functions #'cape-dabbrev)
-  (add-hook 'completion-at-point-functions #'cape-file)
-  (add-hook 'completion-at-point-functions #'cape-elisp-block))
 
 ;; Whitespace removal
 (use-package stripspace
@@ -355,8 +321,8 @@
 (use-package vertico
   :hook after-init
   :config
-  (straight-use-package 'vertico-posframe)
-  (vertico-posframe-mode +1)
+  (use-package vertico-posframe
+    :hook after-init)
   :custom
   ;; Cycle through completions
   (vertico-cycle t))
@@ -399,8 +365,7 @@
 ;; PDF viewing
 (use-package pdf-tools
   :magic ("%PDF" . pdf-view-mode)
-  :config
-  (pdf-tools-install :no-query))
+  :config (pdf-tools-install :no-query))
 
 ;;; Programming modes
 
@@ -422,6 +387,13 @@
   (TeX-view-program-selection '((output-pdf "PDF Tools")))
   (TeX-view-program-list '(("PDF Tools" TeX-pdf-tools-sync-view)))
   (TeX-source-correlate-start-server t)
+  ;; No save query when running command list
+  (TeX-save-query nil)
+  :hook
+  ;; Org-like heading-aware folding and navigation
+  (LaTeX-mode . outline-minor-mode)
+  ;; Unicode display of symbols
+  (LaTex-mode . prettify-symbols-mode)
   :config
   ;; Navigate environments as balanced delims
   (use-package tex-parens
@@ -430,18 +402,27 @@
   (add-hook 'TeX-after-compilation-finished-functions
 	    #'TeX-revert-document-buffer))
 
-
+;; Fast LaTeX input
+;; TODO
 
 ;; Agda 2.8.0
-;; (defun agda2-load-path ()
-;;   (let ((coding-system-for-read 'utf-8))
-;;     (file-name-directory (shell-command-to-string "agda --emacs-mode locate"))))
-
 (use-package agda2
   :straight nil
   :load-path
-  "/Users/e/.cabal/store/ghc-9.6.7/Agd-2.8.0-4e938804/share/emacs-mode/")
+  (lambda ()
+    (file-name-directory (shell-command-to-string "agda --emacs-mode locate")))
+  :custom
+  ;; Highlight the expression being type-checked
+  (agda2-highlight-level 'interactive))
 
+;; Haskell
+(use-package haskell-ts-mode
+  :mode "\\.hs$"
+  :custom
+  (haskell-ts-font-lock-level 4)
+  (haskell-ts-use-indent t)
+  (haskell-ts-ghci "ghci")
+  (haskell-ts-use-indent t))
 
 (provide 'init)
 

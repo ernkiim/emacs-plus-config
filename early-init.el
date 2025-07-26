@@ -27,8 +27,8 @@ Reset VAR to its value at time of calling on HOOK"
 ;; Disable special file handlers during initialization
 (setq-until-startup 'file-name-handler-alist nil)
 
-;; Disable mode line during initialization
-(setq-until-startup 'mode-line-format nil)
+;; Disable mode line (mood-line will replace it)
+(setq-default mode-line-format nil)
 
 ;; Increase chunk size
 (setq read-process-output-max (* 2 1024 1024))
@@ -55,7 +55,7 @@ Reset VAR to its value at time of calling on HOOK"
 
     ;; Don't display messages during startup
     (setq-until 'inhibit-message t 'post-command-hook t))
-  
+
   ;; A second, case-insensitive pass over `auto-mode-alist' is time wasted.
   ;; No second pass of case-insensitive search over auto-mode-alist.
   (setq auto-mode-case-fold nil)
