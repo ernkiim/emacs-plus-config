@@ -164,7 +164,7 @@ Reset VAR to its value at time of calling on HOOK"
 ;; MacOS specific UI
 (when (eq system-type 'darwin)
   ;; Transparent titlebar
-  (push '(ns-appearance . light) default-frame-alist)
+  (push '(ns-appearance . dark) default-frame-alist)
   (push '(ns-transparent-titlebar . t) default-frame-alist)
   ;; No icon in titlebar
   (setq ns-use-proxy-icon nil))

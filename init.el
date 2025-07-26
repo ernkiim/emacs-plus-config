@@ -54,12 +54,14 @@
 	 ("C-<wheel-up>" . nil) ; Smooth scroll can trigger these bindings
 	 ("C-<wheel-down>" . nil))
   :init
-  ;; Theme
-  (load-theme 'modus-operandi-tinted)
   ;; Separate 'C-i' from 'TAB' binding by sending 'C-i' to 'H-i'
   (define-key input-decode-map
 	      (kbd "C-i")
 	      (kbd "H-i"))
+
+  ;; Store custom-set-variables in separate file
+  (setq custom-file (concat user-emacs-directory "custom.el"))
+  (load custom-file 'noerror)
   :custom
   ;; Thin bar cursor
   (cursor-type 'bar)
@@ -94,8 +96,6 @@
   (mouse-wheel-flip-direction t)
   (hscroll-margin 2)
   (hscroll-step 1)
-  ;; Enable nested minibuffers
-  (enable-recursive-minibuffers t)
   ;; Keep the cursor out of the read-only portions of the minibuffer
   (minibuffer-prompt-properties '(read-only t
 				  intangible t
@@ -221,6 +221,13 @@
 
 ;;; Third-party packages
 
+;; Theme
+(use-package monokai-pro-theme
+  :demand t
+  :config (load-theme 'monokai-pro)
+  :custom-face
+  (mode-line-inactive ((t (:background	)))))
+
 ;; Window switching
 (use-package winum
   :hook after-init
@@ -272,6 +279,84 @@
   (vterm-mode
    pdf-view-mode))
 
+
+(defconst homerow
+  '(?n ?t ?e ?s ?i ?r ?o ?a)
+  "Colemak home row in order of finger strength")
+
+;; Fast navigation and shortcut actions
+(use-package avy
+  :bind (("H-i" . avy-goto-char-2) ; C-i
+	 :map isearch-mode-map
+	 ("H-i" . avy-isearch))
+  :custom-face (avy-background-face ((t :inherit shadow)))
+  :custom
+  ;; Use colemak home row
+  (avy-keys '(?n ?t ?e ?s ?i ?r ?o ?a))
+  ;; Dim other text when selecting match
+  (avy-background t)
+  ;; Shortcuts
+  (avy-dispatch-alist
+   '((?\; . avy-action-comment-whole-line)
+     (?k . avy-action-kill-stay)
+     (?K . avy-action-kill-whole-line)
+     (?w . avy-action-copy)
+     (?W . avy-action-copy-whole-line)
+     (?y . avy-action-yank)
+     (?Y . avy-action-yank-whole-line)
+     (?p . avy-action-teleport)
+     (?P . avy-action-teleport-whole-line)
+     (?z . avy-action-zap-to-char)
+     (?m . avy-action-mark)
+     (? . avy-action-mark-to-char)))
+  :config
+  ;; Let closer matches be shallower in selection tree
+  (add-to-list 'avy-orders-alist '(avy-goto-char-2 . avy-order-closest))
+
+  (defun avy-action-comment-whole-line (pt)
+    "Comment item at pt"
+    (save-excursion
+      (goto-char pt)
+      (comment-line 1))
+    (select-window
+     (cdr
+      (ring-ref avy-ring 0)))
+    t)
+
+  (defun avy-action-kill-whole-line (pt)
+    "Kill text"
+    (save-excursion
+      (goto-char pt)
+      (kill-whole-line))
+    (select-window
+     (cdr
+      (ring-ref avy-ring 0)))
+    t)
+
+  (defun avy-action-copy-whole-line (pt)
+    (save-excursion
+      (goto-char pt)
+      (cl-destructuring-bind (start . end)
+          (bounds-of-thing-at-point 'line)
+        (copy-region-as-kill start end)))
+    (select-window
+     (cdr
+      (ring-ref avy-ring 0)))
+    t)
+
+  (defun avy-action-yank-whole-line (pt)
+    (avy-action-copy-whole-line pt)
+    (save-excursion (yank))
+    t)
+
+  (defun avy-action-teleport-whole-line (pt)
+    (avy-action-kill-whole-line pt)
+    (save-excursion (yank)) t)
+
+  (defun avy-action-mark-to-char (pt)
+    (activate-mark)
+    (goto-char pt)))
+
 ;; Magit git porcelain
 (use-package magit
   :config (use-package with-editor)
@@ -289,7 +374,7 @@
 
 ;; Snippets
 (use-package yasnippet
-  :hook (after-init . yas-global-mode)
+  :hook (prog-mode . yas-global-mode)
   :config
   (straight-use-package 'yasnippet-snippets)
   :custom
@@ -367,6 +452,7 @@
   :magic ("%PDF" . pdf-view-mode)
   :config (pdf-tools-install :no-query))
 
+
 ;;; Programming modes
 
 ;; General treesitter modes
@@ -392,8 +478,6 @@
   :hook
   ;; Org-like heading-aware folding and navigation
   (LaTeX-mode . outline-minor-mode)
-  ;; Unicode display of symbols
-  (LaTex-mode . prettify-symbols-mode)
   :config
   ;; Navigate environments as balanced delims
   (use-package tex-parens
@@ -426,4 +510,4 @@
 
 (provide 'init)
 
-;;; init.el ends here
+;; init.el ends here
