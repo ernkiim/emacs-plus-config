@@ -127,8 +127,10 @@ Reset VAR to its value at time of calling on HOOK"
 				    (top    . 0.3)
 				    ;; Menu bar
 				    (menu-bar-lines . 0)
+				    ;; Borders
+				    (internal-border-width . 2)
 				    ;; Font
-				    (font . "Liga SFMono Nerd Font-15")))
+				    (font . "Liga SFMono Nerd Font-16")))
 
 ;; Frame title
 (setq frame-title-format "Emacs\n")

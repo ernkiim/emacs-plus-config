@@ -1,5 +1,9 @@
 ;;; init.el --- Initialization file for Emacs -*- lexical-binding: t; -*-
 
+;; TODO magit-todos
+;; DOING CDLaTeX
+;; TODO Lazytab
+
 (defun delete-visited-file (buffer-name)
   "Delete the file visited by the buffer named BUFFER-NAME."
   (interactive "bDelete file visited by buffer ")
@@ -11,7 +15,10 @@
         (delete-file filename))
       (kill-buffer buffer))))
 
-;; Straight.el bootstrap
+
+;;;; Bootstrapping
+
+;; Straight.el
 (defvar bootstrap-version)
 (let ((bootstrap-file
        (expand-file-name
@@ -28,7 +35,7 @@
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
 
-;; Use-package
+;;; Use-package
 (straight-use-package 'use-package)
 
 (use-package use-package
@@ -45,12 +52,13 @@
   ;; Let imenu see use-package forms
   (use-package-enable-imenu-support t))
 
-;;; Built-in packages
+;;;; Built-in packages
 
 ;; Misc.
 (use-package emacs
   :straight (:type built-in)
-  :bind (("M-u" . up-list)
+  :bind (("C-M-y" . up-list)
+	 ("M-o" . other-window)
 	 ("C-<wheel-up>" . nil) ; Smooth scroll can trigger these bindings
 	 ("C-<wheel-down>" . nil))
   :init
@@ -61,7 +69,7 @@
 
   ;; Store custom-set-variables in separate file
   (setq custom-file (concat user-emacs-directory "custom.el"))
-  (load custom-file 'noerror)
+  (load custom-file 'noerror t)
   :custom
   ;; Thin bar cursor
   (cursor-type 'bar)
@@ -118,6 +126,7 @@
   :straight (:type built-in)
   :hook ((after-init . pixel-scroll-precision-mode)))
 
+;; File management
 (use-package files
   :straight (:type built-in)
   :custom
@@ -129,7 +138,12 @@
   (find-file-visit-truename t)
   (vc-follow-symlinks t))
 
-;; Compilation
+;; Programming options
+(use-package prog-mode
+  :straight (:type built-in)
+  :hook ((after-init . global-prettify-symbols-mode)))
+
+;;; Compilation
 (use-package compile
   :straight (:type built-in)
   :custom
@@ -219,14 +233,12 @@
   (imenu-max-item-length 160))
 
 
-;;; Third-party packages
+;;;; Third-party packages
 
 ;; Theme
-(use-package monokai-pro-theme
+(use-package gruvbox-theme
   :demand t
-  :config (load-theme 'monokai-pro)
-  :custom-face
-  (mode-line-inactive ((t (:background	)))))
+  :config (load-theme 'gruvbox))
 
 ;; Window switching
 (use-package winum
@@ -251,6 +263,8 @@
 ;; Minimal mode line
 (use-package mood-line
   :hook after-init
+  :custom-face
+  (mood-line-unimportant ((t (:inherit background))))
   :custom
   ;; Pretty symbols
   (mood-line-glyph-alist mood-line-glyphs-fira-code)
@@ -279,12 +293,11 @@
   (vterm-mode
    pdf-view-mode))
 
-
+;;; Fast navigation and shortcut actions
 (defconst homerow
   '(?n ?t ?e ?s ?i ?r ?o ?a)
   "Colemak home row in order of finger strength")
 
-;; Fast navigation and shortcut actions
 (use-package avy
   :bind (("H-i" . avy-goto-char-2) ; C-i
 	 :map isearch-mode-map
@@ -372,27 +385,6 @@
 		      discard ; Careful if not delete-by-moving-to-trash
 		      trash)))
 
-;; Snippets
-(use-package yasnippet
-  :hook (prog-mode . yas-global-mode)
-  :config
-  (straight-use-package 'yasnippet-snippets)
-  :custom
-  ;; Indent first line of snippet
-  (yas-also-auto-indent-first-line t)
-  (yas-also-indent-empty-lines t)
-  ;; Setting this to t causes issues with undo
-  (yas-snippet-revival nil)
-  ;; Do not wrap region when expanding snippets
-  (yas-wrap-around-region nil))
-
-;; LSP client; Fast third-party alternative to eglot
-(use-package lsp-bridge
-  :straight '(lsp-bridge :type git :host github :repo "manateelazycat/lsp-bridge"
-            :files (:defaults "*.el" "*.py" "acm" "core" "langserver" "multiserver" "resources")
-            :build (:not compile))
-  :hook prog-mode)
-
 ;; Whitespace removal
 (use-package stripspace
   :hook ((prog-mode text-mode conf-mode) . stripspace-local-mode))
@@ -402,7 +394,7 @@
   :bind (("s-z" . undo-fu-only-undo)
 	 ("s-Z" . undo-fu-only-redo)))
 
-;; Vert&co
+;;; Vert&co
 (use-package vertico
   :hook after-init
   :config
@@ -453,7 +445,7 @@
   :config (pdf-tools-install :no-query))
 
 
-;;; Programming modes
+;;;; Programming
 
 ;; General treesitter modes
 (use-package treesit-auto
@@ -464,30 +456,38 @@
   (treesit-auto-add-to-auto-mode-alist 'all)
   (global-treesit-auto-mode +1))
 
-;; LaTeX
-(use-package auctex
+;; LSP Client
+(use-package eglot
+  :straight (:type built-in)
   :custom
-  (TeX-auto-save t)
-  (TeX-parse-self t)
-  ;; Use pdf-tools to view output pdf
-  (TeX-view-program-selection '((output-pdf "PDF Tools")))
-  (TeX-view-program-list '(("PDF Tools" TeX-pdf-tools-sync-view)))
-  (TeX-source-correlate-start-server t)
-  ;; No save query when running command list
-  (TeX-save-query nil)
-  :hook
-  ;; Org-like heading-aware folding and navigation
-  (LaTeX-mode . outline-minor-mode)
-  :config
-  ;; Navigate environments as balanced delims
-  (use-package tex-parens
-    :hook TeX-mode)
-  ;; Revert pdf after compile
-  (add-hook 'TeX-after-compilation-finished-functions
-	    #'TeX-revert-document-buffer))
+  ;; Improves performance
+  (eglot-events-buffer-size 0)
+  ;; Removes margin indications that shift line height
+  (eglot-code-action-indications '(eldoc-hint)))
 
-;; Fast LaTeX input
-;; TODO
+;; Completion UI
+(use-package corfu
+  :hook (prog-mode . global-corfu-mode)
+  :config
+  ;; Remember recent completions
+  (corfu-history-mode +1)
+  ;; Nerd icons
+  (straight-use-package 'nerd-icons-corfu)
+  (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter)
+  :custom
+  ;; Auto show completions
+  (corfu-auto t)
+  (corfu-auto-prefix 1)
+  (corfu-auto-delay 0.0)
+  ;; Cycle through completions
+  (corfu-cycle t)
+  ;; Hide commands in M-x which do not apply to the current mode.
+  (read-extended-command-predicate #'command-completion-default-include-p)
+  ;; Disable ispell
+  (text-mode-ispell-word-completion nil)
+  :bind (:map corfu-map ("M-SPC" . corfu-insert-separator)))
+
+;;; Languages
 
 ;; Agda 2.8.0
 (use-package agda2
@@ -499,9 +499,36 @@
   ;; Highlight the expression being type-checked
   (agda2-highlight-level 'interactive))
 
+;;; LaTeX
+(use-package auctex
+  :hook
+  ;; Org-like heading-aware folding and navigation
+  (LaTeX-mode . outline-minor-mode)
+  :custom
+  (TeX-auto-save t)
+  (TeX-parse-self t)
+  ;; Use pdf-tools to view output pdf
+  (TeX-view-program-selection '((output-pdf "PDF Tools")))
+  (TeX-view-program-list '(("PDF Tools" TeX-pdf-tools-sync-view)))
+  (TeX-source-correlate-start-server t)
+  ;; No save query when running command list
+  (TeX-save-query nil)
+  :config
+  ;; Navigate environments as balanced delims
+  (use-package tex-parens
+    :hook TeX-mode)
+  ;; Revert pdf after compile
+  (add-hook 'TeX-after-compilation-finished-functions
+	    #'TeX-revert-document-buffer))
+
+(use-package cdlatex
+  :hook TeX-mode
+  :bind (:map cdlatex-mode-map
+	 ("C-c C-e" . cdlatex-environment)))
+
 ;; Haskell
 (use-package haskell-ts-mode
-  :mode "\\.hs$"
+  :hook (haskell-ts-mode . lspce-mode)
   :custom
   (haskell-ts-font-lock-level 4)
   (haskell-ts-use-indent t)
