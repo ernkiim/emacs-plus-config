@@ -4,20 +4,9 @@
 ;; DOING CDLaTeX
 ;; TODO Lazytab
 
-(defun delete-visited-file (buffer-name)
-  "Delete the file visited by the buffer named BUFFER-NAME."
-  (interactive "bDelete file visited by buffer ")
-  (let* ((buffer (get-buffer buffer-name))
-         (filename (buffer-file-name buffer)))
-    (when buffer
-      (when (and filename
-                 (file-exists-p filename))
-        (delete-file filename))
-      (kill-buffer buffer))))
+;;; Bootstrapping
 
-
-
-;; Bootstrap straight.el
+;; Straight package manager
 (defvar bootstrap-version)
 (let ((bootstrap-file
        (expand-file-name
@@ -34,7 +23,7 @@
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
 
-;; Install use-package
+;; Use-package configuration macro
 (straight-use-package 'use-package)
 
 ;; Configure use-package
@@ -53,19 +42,22 @@
   (use-package-enable-imenu-support t))
 
 
-;; Misc.
+
+
+;;; General configuration
+
+;; Misc. options
 (use-package emacs
   :straight (:type built-in)
   :bind (("C-M-y" . up-list)
 	 ("M-o" . other-window)
 	 ("C-<wheel-up>" . nil) ; Smooth scroll can trigger these bindings
 	 ("C-<wheel-down>" . nil))
-  :init
+  :config
   ;; Separate 'C-i' from 'TAB' binding by sending 'C-i' to 'H-i'
   (define-key input-decode-map
 	      (kbd "C-i")
 	      (kbd "H-i"))
-
   ;; Store custom-set-variables in separate file
   (setq custom-file (concat user-emacs-directory "custom.el"))
   (load custom-file 'noerror t)
@@ -98,6 +90,10 @@
   (redisplay-skip-fontification-on-input t)
   ;; No line wrap
   (truncate-lines t)
+  ;; Insert delims in pairs
+  (electric-pair-mode t)
+  ;; Smooth scrolling
+  (pixel-scroll-precision-mode t)
   ;; Horizontal scrolling
   (mouse-wheel-tilt-scroll t)
   (mouse-wheel-flip-direction t)
@@ -109,23 +105,15 @@
 				  cursor-intangible t
 				  face minibuffer-prompt))
   :hook (;; Keep the cursor out of the read-only portions of the minibuffer
-	 (minibuffer-setup . cursor-intangible-mode)))
+	 (minibuffer-setup . cursor-intangible-mode)
+	 ;; Separate C-i from TAB binding (have to redefine for each client)
+	 ((after-init server-after-make-frame) . (lambda ()
+						   (define-key input-decode-map
+							       (kbd "C-i")
+							       (kbd "H-i"))))))
 
-;; Server-specific config
-(use-package server
-  :straight (:type built-in)
-  :hook ((server-after-make-frame . (lambda ()
-				      "input-decode-map is session-local; must redefine for each client"
-				      (define-key input-decode-map
-						  (kbd "C-i")
-						  (kbd "H-i"))))))
 
-;; Smooth scrolling
-(use-package pixel-scroll
-  :straight (:type built-in)
-  :hook ((after-init . pixel-scroll-precision-mode)))
-
-;; File management
+;; File system
 (use-package files
   :straight (:type built-in)
   :custom
@@ -137,40 +125,50 @@
   (find-file-visit-truename t)
   (vc-follow-symlinks t))
 
-;; Directory navigation
-(use-package dired
-  :straight (:type built-in)
-  :hook
-  (;; Hide permissions vector, owner etc.
-   (dired-mode . dired-hide-details-mode))
+
+
+;;; Appearance
+
+;; Theme
+(use-package gruvbox-theme
+  :demand t
+  :config (load-theme 'gruvbox))
+
+;; Minimal mode line
+(use-package mood-line
+  :init (mood-line-mode +1)
+  :custom-face
+  ;; mood-line-unimportant is hard to see with gruvbox
+  (mood-line-unimportant ((t (:inherit background))))
   :custom
-  ;; Don't hide symlink targets
-  (dired-hide-details-hide-symlink-targets nil))
+  ;; Pretty symbols
+  (mood-line-glyph-alist mood-line-glyphs-fira-code)
+  ;; Format and shown items
+  (mood-line-format
+   (mood-line-defformat
+    :left
+    (((or (mood-line-segment-buffer-status) " ") . " ")
+     ((mood-line-segment-buffer-name)            . "  ")
+     ((propertize (mood-line-segment-cursor-position)
+		  'face
+		  '(:inherit mood-line-unimportant))
+      . "  "))
+    :right
+    (((mood-line-segment-misc-info)  . "  ")
+     ((mood-line-segment-vc)         . "  ")
+     ((mood-line-segment-major-mode) . "  ")
+     ((mood-line-segment-checker)    . "  ")
+     (propertize (winum-get-number-string)
+		 'face
+		 '(:inherit mood-line-unimportant))))))
 
-;; Programming options
-(use-package prog-mode
-  :straight (:type built-in)
-  :hook ((after-init . global-prettify-symbols-mode)))
+;; Disable mode line selectively
+(use-package hide-mode-line
+  :hook (vterm-mode
+	 pdf-view-mode))
 
-;; Compilation
-(use-package compile
-  :straight (:type built-in)
-  :custom
-  (compilation-always-kill t)
-  (compilation-ask-about-save nil)
-  (compilation-scroll-output 'first-error))
 
-;; Comint
-(use-package comint
-  :straight (:type built-in)
-  :custom
-  (comint-prompt-read-only t)
-  (comint-buffer-maximum-size 2048))
-
-;; Auto insert paired delims
-(use-package elec-pair
-  :straight (:type built-in)
-  :hook ((prog-mode . electric-pair-mode)))
+;;; UX
 
 ;; Delimiter highlighting
 (use-package paren
@@ -182,18 +180,10 @@
   (show-paren-context-when-offscreen 'overlay) ; Emacs >= 29
   (show-paren-when-point-in-periphery t))
 
-;; Version control
-(use-package vc-git
-  :straight (:type built-in)
-  :custom
-  (vc-git-print-log-follow t)
-  (vc-make-backup-files nil)
-  (vc-git-diff-switches '("--histogram")))
-
 ;; Save position in files
 (use-package saveplace
   :straight (:type built-in)
-  :hook (after-init . save-place-mode)
+  :init (save-place-mode +1)
   :custom
   (save-place-file (expand-file-name "saveplace" user-emacs-directory))
   (save-place-limit 600))
@@ -201,7 +191,7 @@
 ;; Save history
 (use-package savehist
   :straight (:type built-in)
-  :hook after-init
+  :init (savehist-mode +1)
   :custom
   ;; Increase saved history
   (history-length 300)
@@ -213,7 +203,7 @@
 ;; Auto revert
 (use-package autorevert
   :straight (:type built-in)
-  :hook (after-init . global-auto-revert-mode)
+  :init (global-auto-revert-mode +1)
   :custom
   ;; No revert query
   (revert-without-query (list "."))
@@ -234,16 +224,9 @@
   ;; Prevent truncation of long function names in 'imenu' listings
   (imenu-max-item-length 160))
 
-
-
-;; Theme
-(use-package gruvbox-theme
-  :demand t
-  :config (load-theme 'gruvbox))
-
 ;; Window switching
 (use-package winum
-  :hook after-init
+  :init (winum-mode +1)
   :bind
   (("s-0" . winum-select-window-0-or-10)
    ("s-1" . winum-select-window-1)
@@ -261,38 +244,16 @@
   ;; Minibuffer gets number '0'
   (winum-auto-assign-0-to-minibuffer t))
 
-;; Minimal mode line
-(use-package mood-line
-  :hook after-init
-  :custom-face
-  (mood-line-unimportant ((t (:inherit background))))
-  :custom
-  ;; Pretty symbols
-  (mood-line-glyph-alist mood-line-glyphs-fira-code)
-  ;; Format
-  (mood-line-format
-   (mood-line-defformat
-    :left
-    (((or (mood-line-segment-buffer-status) " ") . " ")
-     ((mood-line-segment-buffer-name)            . "  ")
-     ((propertize (mood-line-segment-cursor-position)
-		  'face
-		  '(:inherit mood-line-unimportant))
-      . "  "))
-    :right
-    (((mood-line-segment-misc-info)  . "  ")
-     ((mood-line-segment-vc)         . "  ")
-     ((mood-line-segment-major-mode) . "  ")
-     ((mood-line-segment-checker)    . "  ")
-     (propertize (winum-get-number-string)
-		 'face
-		 '(:inherit mood-line-unimportant))))))
+;; Whitespace removal
+(use-package stripspace
+  :hook ((prog-mode text-mode conf-mode) . stripspace-local-mode))
 
-;; Hide mode line in some modes
-(use-package hide-mode-line
-  :hook (vterm-mode
-	 pdf-view-mode))
+;; Better undo
+(use-package undo-fu
+  :bind (("s-z" . undo-fu-only-undo)
+	 ("s-Z" . undo-fu-only-redo)))
 
+;; Fast navigation and shortcut actions
 (use-package avy
   :bind (("H-i" . avy-goto-char-2) ; C-i
 	 :map isearch-mode-map
@@ -365,7 +326,83 @@
     (activate-mark)
     (goto-char pt)))
 
-;; Magit git porcelain
+
+;;; Vert&co
+
+;; List completing-read completions vertically
+(use-package vertico
+  :init (vertico-mode +1)
+  :custom
+  ;; Show completions in centered frame
+  (straight-use-package 'vertico-posframe)
+  (vertico-posframe-mode +1)
+  :custom
+  ;; Cycle through completions
+  (vertico-cycle t))
+
+;; Completing-read commands
+(use-package consult
+  :bind
+  (("s-l"     . consult-goto-line)
+   ("M-g g"   . consult-goto-line)
+   ("M-g M-g" . consult-goto-line)
+   ("M-y"     . consult-yank-pop)
+   ("s-f"     . consult-line)
+   ("C-x b"   . consult-buffer)
+   ("C-x C-b" . consult-buffer))
+  :hook (completion-list-mode . consult-preview-at-point-mode))
+
+;; Order-insensitive keyword search
+(use-package orderless
+  :custom
+  (completion-styles '(orderless
+                       basic
+		       substring
+		       initials
+		       flex))
+  (completion-category-defaults nil)
+  (completion-category-overrides '((file (styles basic partial-completion)))))
+
+;; Annotations in minibuffer
+(use-package marginalia
+  :init (marginalia-mode +1))
+
+
+;;; IDE features
+
+;; Compilation
+(use-package compile
+  :straight (:type built-in)
+  :custom
+  (compilation-always-kill t)
+  (compilation-ask-about-save nil)
+  (compilation-scroll-output 'first-error))
+
+;; Native LSP client
+(use-package eglot
+  :straight (:type built-in)
+  :custom
+  ;; Improves performance
+  (eglot-events-buffer-size 0)
+  ;; Removes margin indications that shift line height
+  (eglot-code-action-indications '(eldoc-hint)))
+
+;; Interpreters in buffer
+(use-package comint
+  :straight (:type built-in)
+  :custom
+  (comint-prompt-read-only t)
+  (comint-buffer-maximum-size 2048))
+
+;; Version control integration
+(use-package vc-git
+  :straight (:type built-in)
+  :custom
+  (vc-git-print-log-follow t)
+  (vc-make-backup-files nil)
+  (vc-git-diff-switches '("--histogram")))
+
+;; Git interface
 (use-package magit
   :config (straight-use-package 'with-editor)
   :custom
@@ -380,91 +417,18 @@
 		      discard ; Careful if not delete-by-moving-to-trash
 		      trash)))
 
-;; Whitespace removal
-(use-package stripspace
-  :hook ((prog-mode text-mode conf-mode) . stripspace-local-mode))
-
-;; Better undo
-(use-package undo-fu
-  :bind (("s-z" . undo-fu-only-undo)
-	 ("s-Z" . undo-fu-only-redo)))
-
-;; Vertical completion list
-(use-package vertico
-  :hook after-init
-  :config
-  ;; Show completions in centered frame
-  (straight-use-package 'vertico-posframe)
-  (vertico-posframe-mode +1)
-  :custom
-  ;; Cycle through completions
-  (vertico-cycle t))
-
-;; Order-insensitive keyword search
-(use-package orderless
-  :custom
-  (completion-styles '(orderless
-                       basic
-		       substring
-		       initials
-		       flex))
-  (completion-category-defaults nil)
-  (completion-category-overrides '((file (styles basic partial-completion)))))
-
-(use-package marginalia
-  :hook after-init
-  :commands (marginalia-mode marginalia-cycle))
-
-;; Completing-read commands
-(use-package consult
-  :bind
-  (("s-l"     . consult-goto-line)
-   ("M-g g"   . consult-goto-line)
-   ("M-g M-g" . consult-goto-line)
-   ("M-y"     . consult-yank-pop)
-   ("s-f"     . consult-line)
-   ("C-x b"   . consult-buffer)
-   ("C-x C-b" . consult-buffer))
-  :hook (completion-list-mode . consult-preview-at-point-mode))
-
-;; Terminal emulator
-(use-package vterm
-  :bind (("s-T" . vterm)
-	 ("s-t" . vterm-other-window)
-	 :map vterm-mode-map
-	 ("C-y" . vterm-yank))
-  :custom
-  ;; Completely clear terminal on 'C-l'
-  (vterm-clear-scrollback-when-clearing t))
-
-;; PDF viewing
-(use-package pdf-tools
-  :magic ("%PDF" . pdf-view-mode)
-  :config (pdf-tools-install :no-query))
-
-
-
-;; General treesitter modes
+;; Automatically install treesit modes
 (use-package treesit-auto
   :custom
-  ;; Prompt to install new treesitter grammar
+  ;; Prompt to install new grammar
   (treesit-auto-install 'prompt)
   :config
   (treesit-auto-add-to-auto-mode-alist 'all)
   (global-treesit-auto-mode +1))
 
-;; LSP Client
-(use-package eglot
-  :straight (:type built-in)
-  :custom
-  ;; Improves performance
-  (eglot-events-buffer-size 0)
-  ;; Removes margin indications that shift line height
-  (eglot-code-action-indications '(eldoc-hint)))
-
-;; Completion UI
+;; Completion interface
 (use-package corfu
-  :hook (prog-mode . global-corfu-mode)
+  :init (corfu-mode +1)
   :config
   ;; Remember recent completions
   (corfu-history-mode +1)
@@ -484,6 +448,19 @@
   (text-mode-ispell-word-completion nil)
   :bind (:map corfu-map ("M-SPC" . corfu-insert-separator)))
 
+;; Fast terminal emulator
+(use-package vterm
+  :bind (("s-T" . vterm)
+	 ("s-t" . vterm-other-window)
+	 :map vterm-mode-map
+	 ("C-y" . vterm-yank))
+  :custom
+  ;; Completely clear terminal on 'C-l'
+  (vterm-clear-scrollback-when-clearing t))
+
+
+;;; Language major modes
+
 ;; Agda 2.8.0
 (use-package agda2
   :straight nil
@@ -499,8 +476,12 @@
   :hook
   ;; Org-like heading-aware folding and navigation
   (LaTeX-mode . outline-minor-mode)
+  ;; In-line unicode preview symbol macros
+  (LaTeX-mode . prettify-symbols-mode)
   :custom
+  ;; Save style information when saving buffer
   (TeX-auto-save t)
+  ;; Parse file after loading
   (TeX-parse-self t)
   ;; Use pdf-tools to view output pdf
   (TeX-view-program-selection '((output-pdf "PDF Tools")))
@@ -534,6 +515,31 @@
   (add-to-list 'eglot-server-programs
 	       '(haskell-ts-mode "haskell-language-server-wrapper" "--lsp")))
 
+
+
+;;; Misc. major modes
+
+;; Directory editing and navigation
+(use-package dired
+  :straight (:type built-in)
+  :hook
+  (;; Hide permissions vector, owner etc.
+   (dired-mode . dired-hide-details-mode))
+  :custom
+  ;; Don't hide symlink targets
+  (dired-hide-details-hide-symlink-targets nil))
+
+;; PDF interaction
+(use-package pdf-tools
+  :magic ("%PDF" . pdf-view-mode)
+  :config (pdf-tools-install :no-query))
+
+
+;;; Cleanup
+
 (provide 'init)
 
-;; init.el ends here
+;; Local variables:
+;; coding: utf-8
+;; End:
+;;; init.el ends here
