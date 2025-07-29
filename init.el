@@ -16,9 +16,8 @@
       (kill-buffer buffer))))
 
 
-;;;; Bootstrapping
 
-;; Straight.el
+;; Bootstrap straight.el
 (defvar bootstrap-version)
 (let ((bootstrap-file
        (expand-file-name
@@ -35,9 +34,10 @@
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
 
-;;; Use-package
+;; Install use-package
 (straight-use-package 'use-package)
 
+;; Configure use-package
 (use-package use-package
   :straight nil
   :custom
@@ -52,7 +52,6 @@
   ;; Let imenu see use-package forms
   (use-package-enable-imenu-support t))
 
-;;;; Built-in packages
 
 ;; Misc.
 (use-package emacs
@@ -138,25 +137,28 @@
   (find-file-visit-truename t)
   (vc-follow-symlinks t))
 
+;; Directory navigation
+(use-package dired
+  :straight (:type built-in)
+  :hook
+  (;; Hide permissions vector, owner etc.
+   (dired-mode . dired-hide-details-mode))
+  :custom
+  ;; Don't hide symlink targets
+  (dired-hide-details-hide-symlink-targets nil))
+
 ;; Programming options
 (use-package prog-mode
   :straight (:type built-in)
   :hook ((after-init . global-prettify-symbols-mode)))
 
-;;; Compilation
+;; Compilation
 (use-package compile
   :straight (:type built-in)
   :custom
   (compilation-always-kill t)
   (compilation-ask-about-save nil)
   (compilation-scroll-output 'first-error))
-
-(use-package comp-run
-  :straight (:type built-in)
-  :custom
-  ;; Ask the user whether to terminate asynchronous compilations on exit.
-  ;; This prevents native compilation from leaving temporary files in /tmp.
-  (native-comp-query-on-exit t))
 
 ;; Comint
 (use-package comint
@@ -233,7 +235,6 @@
   (imenu-max-item-length 160))
 
 
-;;;; Third-party packages
 
 ;; Theme
 (use-package gruvbox-theme
@@ -289,14 +290,8 @@
 
 ;; Hide mode line in some modes
 (use-package hide-mode-line
-  :hook
-  (vterm-mode
-   pdf-view-mode))
-
-;;; Fast navigation and shortcut actions
-(defconst homerow
-  '(?n ?t ?e ?s ?i ?r ?o ?a)
-  "Colemak home row in order of finger strength")
+  :hook (vterm-mode
+	 pdf-view-mode))
 
 (use-package avy
   :bind (("H-i" . avy-goto-char-2) ; C-i
@@ -372,7 +367,7 @@
 
 ;; Magit git porcelain
 (use-package magit
-  :config (use-package with-editor)
+  :config (straight-use-package 'with-editor)
   :custom
   ;; Add magit-status, -dispatch, and -file-dispatch actions to global
   (magit-maybe-define-global-key-bindings recommended)
@@ -394,16 +389,18 @@
   :bind (("s-z" . undo-fu-only-undo)
 	 ("s-Z" . undo-fu-only-redo)))
 
-;;; Vert&co
+;; Vertical completion list
 (use-package vertico
   :hook after-init
   :config
-  (use-package vertico-posframe)
+  ;; Show completions in centered frame
+  (straight-use-package 'vertico-posframe)
   (vertico-posframe-mode +1)
   :custom
   ;; Cycle through completions
   (vertico-cycle t))
 
+;; Order-insensitive keyword search
 (use-package orderless
   :custom
   (completion-styles '(orderless
@@ -418,6 +415,7 @@
   :hook after-init
   :commands (marginalia-mode marginalia-cycle))
 
+;; Completing-read commands
 (use-package consult
   :bind
   (("s-l"     . consult-goto-line)
@@ -445,7 +443,6 @@
   :config (pdf-tools-install :no-query))
 
 
-;;;; Programming
 
 ;; General treesitter modes
 (use-package treesit-auto
@@ -487,8 +484,6 @@
   (text-mode-ispell-word-completion nil)
   :bind (:map corfu-map ("M-SPC" . corfu-insert-separator)))
 
-;;; Languages
-
 ;; Agda 2.8.0
 (use-package agda2
   :straight nil
@@ -499,7 +494,7 @@
   ;; Highlight the expression being type-checked
   (agda2-highlight-level 'interactive))
 
-;;; LaTeX
+;; LaTeX
 (use-package auctex
   :hook
   ;; Org-like heading-aware folding and navigation
@@ -521,6 +516,7 @@
   (add-hook 'TeX-after-compilation-finished-functions
 	    #'TeX-revert-document-buffer))
 
+;; Fast LaTeX entry
 (use-package cdlatex
   :hook TeX-mode
   :bind (:map cdlatex-mode-map
@@ -528,12 +524,15 @@
 
 ;; Haskell
 (use-package haskell-ts-mode
-  :hook (haskell-ts-mode . lspce-mode)
+  :hook (haskell-ts-mode . eglot-ensure)
   :custom
   (haskell-ts-font-lock-level 4)
   (haskell-ts-use-indent t)
   (haskell-ts-ghci "ghci")
-  (haskell-ts-use-indent t))
+  (haskell-ts-use-indent t)
+  :config
+  (add-to-list 'eglot-server-programs
+	       '(haskell-ts-mode "haskell-language-server-wrapper" "--lsp")))
 
 (provide 'init)
 
