@@ -1,8 +1,7 @@
 ;;; init.el --- Initialization file for Emacs -*- lexical-binding: t; -*-
 
-;; TODO magit-todos
-;; DOING CDLaTeX
-;; TODO Lazytab
+;; TODO: Set up more Eglot modes
+;; TODO: Lazytab
 
 ;;; Bootstrapping
 
@@ -90,6 +89,8 @@
   (redisplay-skip-fontification-on-input t)
   ;; No line wrap
   (truncate-lines t)
+  ;; Make sentences work normally
+  (sentence-end-double-space nil)
   ;; Insert delims in pairs
   (electric-pair-mode t)
   ;; Smooth scrolling
@@ -161,12 +162,6 @@
      (propertize (winum-get-number-string)
 		 'face
 		 '(:inherit mood-line-unimportant))))))
-
-;; Disable mode line selectively
-(use-package hide-mode-line
-  :hook (vterm-mode
-	 pdf-view-mode))
-
 
 ;;; UX
 
@@ -332,7 +327,7 @@
 ;; List completing-read completions vertically
 (use-package vertico
   :init (vertico-mode +1)
-  :custom
+  :config
   ;; Show completions in centered frame
   (straight-use-package 'vertico-posframe)
   (vertico-posframe-mode +1)
@@ -350,7 +345,10 @@
    ("s-f"     . consult-line)
    ("C-x b"   . consult-buffer)
    ("C-x C-b" . consult-buffer))
-  :hook (completion-list-mode . consult-preview-at-point-mode))
+  :hook (completion-list-mode . consult-preview-at-point-mode)
+  :config
+  (use-package consult-todo
+    :bind ("s-d" . consult-todo)))
 
 ;; Order-insensitive keyword search
 (use-package orderless
@@ -385,7 +383,14 @@
   ;; Improves performance
   (eglot-events-buffer-size 0)
   ;; Removes margin indications that shift line height
-  (eglot-code-action-indications '(eldoc-hint)))
+  (eglot-code-action-indications '(eldoc-hint))
+  :config
+  ;; Python
+  (add-to-list 'eglot-server-programs
+
+	       '((python-mode python-ts-mode) "basedpyright"))
+  (add-to-list 'eglot-server-programs
+	       '((haskell-mode haskell-ts-mode) "haskell-language-server-wrapper" "--lsp")))
 
 ;; Interpreters in buffer
 (use-package comint
@@ -404,7 +409,12 @@
 
 ;; Git interface
 (use-package magit
-  :config (straight-use-package 'with-editor)
+  :config
+  ;; Use emacs client to edit commit messages
+  (straight-use-package 'with-editor)
+  ;; Show project todo items in magit buffer
+  (straight-use-package 'magit-todos)
+  (magit-todos-mode +1)
   :custom
   ;; Add magit-status, -dispatch, and -file-dispatch actions to global
   (magit-maybe-define-global-key-bindings recommended)
@@ -428,7 +438,7 @@
 
 ;; Completion interface
 (use-package corfu
-  :init (corfu-mode +1)
+  :init (global-corfu-mode +1)
   :config
   ;; Remember recent completions
   (corfu-history-mode +1)
@@ -439,7 +449,7 @@
   ;; Auto show completions
   (corfu-auto t)
   (corfu-auto-prefix 1)
-  (corfu-auto-delay 0.0)
+  (corfu-auto-delay 0.1)
   ;; Cycle through completions
   (corfu-cycle t)
   ;; Hide commands in M-x which do not apply to the current mode.
@@ -501,19 +511,50 @@
 (use-package cdlatex
   :hook TeX-mode
   :bind (:map cdlatex-mode-map
-	 ("C-c C-e" . cdlatex-environment)))
+	      ("C-c C-e" . cdlatex-environment))
+  :config
+  (defun cdlatex-dollar (&optional arg)
+  "Redefine built-in cdlatex dollar to use \\[...\\] instead of $$...$$"
+  (interactive "P")
+  (cond
+   ((region-active-p)
+    (let ((s (region-beginning)) (e (region-end)))
+      (goto-char s)
+      (insert "$")
+      (goto-char (1+ e))
+      (insert "$")))
+   ((cdlatex-number-of-backslashes-is-odd)
+    (insert "$"))
+   ((cdlatex--texmathp)
+    (defvar texmathp-why)
+    (if (and (stringp (car texmathp-why))
+             (equal (substring (car texmathp-why) 0 1) "$"))
+        (progn
+          (insert (car texmathp-why))
+          (save-excursion
+            (goto-char (cdr texmathp-why))
+            (if (pos-visible-in-window-p)
+                (sit-for 1))))
+      (message "No dollars inside a math environment!")
+      (ding)))
+   ((and (stringp cdlatex-paired-parens)
+         (string-match "\\$" cdlatex-paired-parens))
+    (if arg
+        (if (bolp)
+            (progn (insert "\\[\n\n\\]\n") (backward-char 4))
+          (insert "\\[  \\]") (backward-char 3))
+      (insert "$$") (backward-char 1)))
+   (arg
+    (if (bolp) (insert "\\[\n") (insert "\\[")))
+   (t (insert "$")))))
 
 ;; Haskell
 (use-package haskell-ts-mode
-  :hook (haskell-ts-mode . eglot-ensure)
   :custom
   (haskell-ts-font-lock-level 4)
   (haskell-ts-use-indent t)
   (haskell-ts-ghci "ghci")
-  (haskell-ts-use-indent t)
-  :config
-  (add-to-list 'eglot-server-programs
-	       '(haskell-ts-mode "haskell-language-server-wrapper" "--lsp")))
+  (haskell-ts-use-indent t))
 
 
 
@@ -524,10 +565,14 @@
   :straight (:type built-in)
   :hook
   (;; Hide permissions vector, owner etc.
-   (dired-mode . dired-hide-details-mode))
+   (dired-mode . dired-hide-details-mode)
+   ;; Hide unwanted file names
+   (dired-mode . dired-omit-mode))
   :custom
   ;; Don't hide symlink targets
-  (dired-hide-details-hide-symlink-targets nil))
+  (dired-hide-details-hide-symlink-targets nil)
+  ;; Omit ., .. and .DS_Store
+  (dired-omit-files "^\\.?#\\|^\\.$\\|^\\.\\.$\\|\\.DS_Store"))
 
 ;; PDF interaction
 (use-package pdf-tools
