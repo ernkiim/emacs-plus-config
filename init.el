@@ -1,6 +1,5 @@
 ;;; init.el --- Initialization file for Emacs -*- lexical-binding: t; -*-
 
-;; TODO: Set up more Eglot modes
 ;; TODO: Lazytab
 
 ;;; Bootstrapping
