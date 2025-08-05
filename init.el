@@ -41,8 +41,6 @@
   (use-package-enable-imenu-support t))
 
 
-
-
 ;;; General configuration
 
 ;; Misc. options
@@ -379,6 +377,11 @@
 ;; Native LSP client
 (use-package eglot
   :straight (:type built-in)
+  :hook (((python-mode
+	   python-ts-mode
+	   haskell-mode
+	   haskell-ts-mode)
+	  . eglot-ensure))
   :custom
   ;; Improves performance
   (eglot-events-buffer-size 0)
@@ -387,7 +390,6 @@
   :config
   ;; Python
   (add-to-list 'eglot-server-programs
-
 	       '((python-mode python-ts-mode) "basedpyright"))
   (add-to-list 'eglot-server-programs
 	       '((haskell-mode haskell-ts-mode) "haskell-language-server-wrapper" "--lsp")))
@@ -509,44 +511,56 @@
 
 ;; Fast LaTeX entry
 (use-package cdlatex
-  :hook TeX-mode
+  :hook (TeX-mode
+	 (cdlatex-tab . LaTeX-indent-line))
   :bind (:map cdlatex-mode-map
 	      ("C-c C-e" . cdlatex-environment))
   :config
+  ;; Fix indentation after inserting environment
+  (advice-add 'cdlatex-environment
+	      :after
+	      (lambda ()
+		(save-excursion
+		  (tex-parens-mark-inner)
+		  (indent-region (mark) (point)))
+		(LaTeX-indent-line)))
+
+  ;; Redefine built-in cdlatex dollar to use \\[...\\] instead of $$...$$
   (defun cdlatex-dollar (&optional arg)
-  "Redefine built-in cdlatex dollar to use \\[...\\] instead of $$...$$"
-  (interactive "P")
-  (cond
-   ((region-active-p)
-    (let ((s (region-beginning)) (e (region-end)))
-      (goto-char s)
-      (insert "$")
-      (goto-char (1+ e))
-      (insert "$")))
-   ((cdlatex-number-of-backslashes-is-odd)
-    (insert "$"))
-   ((cdlatex--texmathp)
-    (defvar texmathp-why)
-    (if (and (stringp (car texmathp-why))
-             (equal (substring (car texmathp-why) 0 1) "$"))
-        (progn
-          (insert (car texmathp-why))
-          (save-excursion
-            (goto-char (cdr texmathp-why))
-            (if (pos-visible-in-window-p)
-                (sit-for 1))))
-      (message "No dollars inside a math environment!")
-      (ding)))
-   ((and (stringp cdlatex-paired-parens)
-         (string-match "\\$" cdlatex-paired-parens))
-    (if arg
-        (if (bolp)
-            (progn (insert "\\[\n\n\\]\n") (backward-char 4))
-          (insert "\\[  \\]") (backward-char 3))
-      (insert "$$") (backward-char 1)))
-   (arg
-    (if (bolp) (insert "\\[\n") (insert "\\[")))
-   (t (insert "$")))))
+    "Insert a pair of dollars unless number of backslashes before point is odd.
+ With ARG, insert \\[...\\] instead."
+    (interactive "P")
+    (cond
+     ((region-active-p)
+      (let ((s (region-beginning)) (e (region-end)))
+	(goto-char s)
+	(insert "$")
+	(goto-char (1+ e))
+	(insert "$")))
+     ((cdlatex-number-of-backslashes-is-odd)
+      (insert "$"))
+     ((cdlatex--texmathp)
+      (defvar texmathp-why)
+      (if (and (stringp (car texmathp-why))
+               (equal (substring (car texmathp-why) 0 1) "$"))
+          (progn
+            (insert (car texmathp-why))
+            (save-excursion
+              (goto-char (cdr texmathp-why))
+              (if (pos-visible-in-window-p)
+                  (sit-for 1))))
+	(message "No dollars inside a math environment!")
+	(ding)))
+     ((and (stringp cdlatex-paired-parens)
+           (string-match "\\$" cdlatex-paired-parens))
+      (if arg
+          (if (bolp)
+              (progn (insert "\\[\n\n\\]") (backward-char 3) (LaTeX-indent-line))
+            (insert "\\[  \\]") (backward-char 3))
+	(insert "$$") (backward-char 1)))
+     (arg
+      (if (bolp) (insert "\\[\n") (insert "\\[")))
+     (t (insert "$")))))
 
 ;; Haskell
 (use-package haskell-ts-mode

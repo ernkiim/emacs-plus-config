@@ -18,6 +18,7 @@ Reset VAR to its value at time of calling on HOOK"
 ;; Debug
 (setq debug-on-error init-file-debug)
 
+
 ;;; Performance
 
 ;; Defer garbage collection
