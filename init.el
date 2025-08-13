@@ -1,6 +1,8 @@
 ;;; init.el --- Initialization file for Emacs -*- lexical-binding: t; -*-
 
 ;; TODO: Lazytab
+;; TODO: Use monospace font
+;; TODO: Back to LSP-bridge
 
 ;;; Bootstrapping
 
@@ -46,6 +48,7 @@
 (use-package emacs
   :straight (:type built-in)
   :bind (("C-M-y" . up-list)
+	 ("C-M-w" . delete-pair)
 	 ("M-o" . other-window)
 	 ("C-<wheel-up>" . nil) ; Smooth scroll can trigger these bindings
 	 ("C-<wheel-down>" . nil))
@@ -256,6 +259,8 @@
   (avy-keys '(?n ?t ?e ?s ?i ?r ?o ?a))
   ;; Dim other text when selecting match
   (avy-background t)
+  ;; Allow shortcuts on single match
+  (avy-single-candidate-jump nil)
   ;; Shortcuts
   (avy-dispatch-alist
    '((?\; . avy-action-comment-whole-line)
@@ -450,7 +455,7 @@
   ;; Auto show completions
   (corfu-auto t)
   (corfu-auto-prefix 1)
-  (corfu-auto-delay 0.1)
+  (corfu-auto-delay 0.2)
   ;; Cycle through completions
   (corfu-cycle t)
   ;; Hide commands in M-x which do not apply to the current mode.
@@ -485,10 +490,10 @@
 ;; LaTeX
 (use-package auctex
   :hook
-  ;; Org-like heading-aware folding and navigation
-  (LaTeX-mode . outline-minor-mode)
-  ;; In-line unicode preview symbol macros
-  (LaTeX-mode . prettify-symbols-mode)
+  (;; Org-like heading-aware folding and navigation
+   (LaTeX-mode . outline-minor-mode)
+   ;; In-line unicode preview symbol macros
+   (LaTeX-mode . prettify-symbols-mode))
   :custom
   ;; Save style information when saving buffer
   (TeX-auto-save t)
@@ -501,65 +506,28 @@
   ;; No save query when running command list
   (TeX-save-query nil)
   :config
+
   ;; Navigate environments as balanced delims
   (use-package tex-parens
-    :hook TeX-mode)
+    :hook TeX-mode
+    :bind (("C-M-w" . tex-parens-delete-pair)))
+
+  ;; Fast LaTeX entry
+  (use-package cdlatex
+    :hook LaTeX-mode
+    :straight (cdlatex :type git :host github :repo "cdominik/cdlatex"
+		       ;; Use my fork
+		       :fork (:host github
+				    :repo "ernkiim/cdlatex"))
+    :custom
+    ;; Turn off labels
+    (cdlatex-insert-auto-labels-in-env-templates nil))
+
   ;; Revert pdf after compile
   (add-hook 'TeX-after-compilation-finished-functions
 	    #'TeX-revert-document-buffer))
 
-;; Fast LaTeX entry
-(use-package cdlatex
-  :hook (TeX-mode
-	 (cdlatex-tab . LaTeX-indent-line))
-  :bind (:map cdlatex-mode-map
-	      ("C-c C-e" . cdlatex-environment))
-  :config
-  ;; Fix indentation after inserting environment
-  (advice-add 'cdlatex-environment
-	      :after
-	      (lambda ()
-		(save-excursion
-		  (tex-parens-mark-inner)
-		  (indent-region (mark) (point)))
-		(LaTeX-indent-line)))
 
-  ;; Redefine built-in cdlatex dollar to use \\[...\\] instead of $$...$$
-  (defun cdlatex-dollar (&optional arg)
-    "Insert a pair of dollars unless number of backslashes before point is odd.
- With ARG, insert \\[...\\] instead."
-    (interactive "P")
-    (cond
-     ((region-active-p)
-      (let ((s (region-beginning)) (e (region-end)))
-	(goto-char s)
-	(insert "$")
-	(goto-char (1+ e))
-	(insert "$")))
-     ((cdlatex-number-of-backslashes-is-odd)
-      (insert "$"))
-     ((cdlatex--texmathp)
-      (defvar texmathp-why)
-      (if (and (stringp (car texmathp-why))
-               (equal (substring (car texmathp-why) 0 1) "$"))
-          (progn
-            (insert (car texmathp-why))
-            (save-excursion
-              (goto-char (cdr texmathp-why))
-              (if (pos-visible-in-window-p)
-                  (sit-for 1))))
-	(message "No dollars inside a math environment!")
-	(ding)))
-     ((and (stringp cdlatex-paired-parens)
-           (string-match "\\$" cdlatex-paired-parens))
-      (if arg
-          (if (bolp)
-              (progn (insert "\\[\n\n\\]") (backward-char 3) (LaTeX-indent-line))
-            (insert "\\[  \\]") (backward-char 3))
-	(insert "$$") (backward-char 1)))
-     (arg
-      (if (bolp) (insert "\\[\n") (insert "\\[")))
-     (t (insert "$")))))
 
 ;; Haskell
 (use-package haskell-ts-mode
@@ -576,6 +544,8 @@
 ;; Directory editing and navigation
 (use-package dired
   :straight (:type built-in)
+  :config
+  (straight-use-package 'dired-x)
   :hook
   (;; Hide permissions vector, owner etc.
    (dired-mode . dired-hide-details-mode)
