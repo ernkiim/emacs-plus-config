@@ -418,10 +418,14 @@
   :config
   ;; Use emacs client to edit commit messages
   (straight-use-package 'with-editor)
-  ;; Show project todo items in magit buffer
-  (straight-use-package 'magit-todos)
-  (magit-todos-mode +1)
+  ;; Show todo items in magit buffer
+  (use-package magit-todos
+    :config (magit-todos-mode +1)
+    :custom
+    (magit-todos-branch-list nil))
   :custom
+  ;; Hardcode git path
+  (magit-git-executable "/opt/homebrew/bin/git")
   ;; Add magit-status, -dispatch, and -file-dispatch actions to global
   (magit-maybe-define-global-key-bindings recommended)
   ;; Don't refresh status buffer, only current buffer
@@ -527,8 +531,6 @@
   (add-hook 'TeX-after-compilation-finished-functions
 	    #'TeX-revert-document-buffer))
 
-
-
 ;; Haskell
 (use-package haskell-ts-mode
   :custom
@@ -544,8 +546,6 @@
 ;; Directory editing and navigation
 (use-package dired
   :straight (:type built-in)
-  :config
-  (straight-use-package 'dired-x)
   :hook
   (;; Hide permissions vector, owner etc.
    (dired-mode . dired-hide-details-mode)
