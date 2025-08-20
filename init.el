@@ -494,9 +494,7 @@
 (use-package auctex
   :hook
   (;; Org-like heading-aware folding and navigation
-   (LaTeX-mode . outline-minor-mode)
-   ;; Use unicode symbols for WYSIWYG
-   (LaTeX-mode . prettify-symbols-mode))
+   (LaTeX-mode . outline-minor-mode))
   :custom
   ;; Save style information when saving buffer
   (TeX-auto-save t)
