@@ -1,7 +1,6 @@
 ;;; init.el --- Initialization file for Emacs -*- lexical-binding: t; -*-
 
 ;; TODO: Lazytab
-;; TODO: Use monospace font
 ;; TODO: Back to LSP-bridge
 
 ;;; Bootstrapping
@@ -496,7 +495,7 @@
   :hook
   (;; Org-like heading-aware folding and navigation
    (LaTeX-mode . outline-minor-mode)
-   ;; In-line unicode preview symbol macros
+   ;; Use unicode symbols for WYSIWYG
    (LaTeX-mode . prettify-symbols-mode))
   :custom
   ;; Save style information when saving buffer
@@ -518,14 +517,18 @@
 
   ;; Fast LaTeX entry
   (use-package cdlatex
-    :hook LaTeX-mode
+    :hook
+    (LaTeX-mode
+     (cdlatex-tab . LaTeX-indent-line))
     :straight (cdlatex :type git :host github :repo "cdominik/cdlatex"
 		       ;; Use my fork
 		       :fork (:host github
 				    :repo "ernkiim/cdlatex"))
     :custom
     ;; Turn off labels
-    (cdlatex-insert-auto-labels-in-env-templates nil))
+    (cdlatex-insert-auto-labels-in-env-templates nil)
+    ;; Pair parentheses
+    (cdlatex-paired-parens "${[("))
 
   ;; Revert pdf after compile
   (add-hook 'TeX-after-compilation-finished-functions
