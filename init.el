@@ -62,12 +62,17 @@
   :custom
   ;; Thin bar cursor
   (cursor-type 'bar)
+  ;; Make cursor flash instead of blinking
+  (blink-cursor-blinks 1)
+  (blink-cursor-alist '((bar . box)))
   ;; Answer y/n insteand of yes/no
   (use-short-answers t)
   ;; Echo keystrokes fast
   (echo-keystrokes 0.01)
   ;; Don't show C-h reminder text
   (echo-keystrokes-help nil)
+  ;; Minibuffers when another minibuffer is already open
+  (enable-recursive-minibuffers t)
   ;; Undo/redo limits
   (undo-limit (* 13 160000))
   (undo-strong-limit (* 13 240000))
@@ -90,8 +95,6 @@
   (truncate-lines t)
   ;; Make sentences work normally
   (sentence-end-double-space nil)
-  ;; Insert delims in pairs
-  (electric-pair-mode t)
   ;; Smooth scrolling
   (pixel-scroll-precision-mode t)
   ;; Horizontal scrolling
@@ -173,6 +176,13 @@
   (show-paren-when-point-inside-paren t)
   (show-paren-context-when-offscreen 'overlay) ; Emacs >= 29
   (show-paren-when-point-in-periphery t))
+
+;; Delimiter insertion
+(use-package elec-pair
+  :straight (:type built-in)
+  :init (electric-pair-mode +1)
+  :custom
+  (electric-pair-inhibit-predicate 'electric-pair-conservative-inhibit))
 
 ;; Save position in files
 (use-package saveplace
@@ -511,7 +521,7 @@
   ;; Navigate environments as balanced delims
   (use-package tex-parens
     :hook TeX-mode
-    :bind (("C-M-w" . tex-parens-delete-pair)))
+    :bind (:map TeX-mode-map ("C-M-w" . tex-parens-delete-pair)))
 
   ;; Fast LaTeX entry
   (use-package cdlatex
@@ -525,12 +535,20 @@
     :custom
     ;; Turn off labels
     (cdlatex-insert-auto-labels-in-env-templates nil)
+    ;; Use electric pairs
+    (cdlatex-takeover-parenthesis nil)
     ;; Pair parentheses
-    (cdlatex-paired-parens "${[("))
+    ;; (cdlatex-paired-parens "${[(")
+    )
 
   ;; Revert pdf after compile
   (add-hook 'TeX-after-compilation-finished-functions
 	    #'TeX-revert-document-buffer))
+
+;; Markdown
+(use-package markdown-ts-mode
+  :straight (:type built-in)
+  :hook (markdown-ts-mode . visual-line-mode))
 
 ;; Haskell
 (use-package haskell-ts-mode
@@ -561,7 +579,11 @@
 ;; PDF interaction
 (use-package pdf-tools
   :magic ("%PDF" . pdf-view-mode)
-  :config (pdf-tools-install :no-query))
+  :config
+  ;; Initialize
+  (pdf-tools-install :no-query)
+  ;; Save place in pdf buffer
+  (straight-use-package 'saveplace-pdf-view))
 
 
 ;;; Cleanup

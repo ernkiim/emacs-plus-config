@@ -131,7 +131,7 @@ Reset VAR to its value at time of calling on HOOK"
 				    ;; Borders
 				    (internal-border-width . 2)
 				    ;; Font
-				    (font . "Meslo LG S-16")))
+				    (font . "JuliaMono-16")))
 
 ;; Frame title
 (setq frame-title-format "Emacs\n")
