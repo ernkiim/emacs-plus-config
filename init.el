@@ -1,7 +1,7 @@
 ;;; init.el --- Initialization file for Emacs -*- lexical-binding: t; -*-
 
 ;; TODO: Lazytab
-;; TODO: Back to LSP-bridge
+;; DONE: Back to LSP-bridge
 
 ;;; Bootstrapping
 
