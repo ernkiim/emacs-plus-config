@@ -387,25 +387,20 @@
   (compilation-ask-about-save nil)
   (compilation-scroll-output 'first-error))
 
-;; Native LSP client
-(use-package eglot
-  :straight (:type built-in)
-  :hook (((python-mode
-	   python-ts-mode
-	   haskell-mode
-	   haskell-ts-mode)
-	  . eglot-ensure))
+;; Snippets
+(use-package yasnippet
+  :init (yas-global-mode +1))
+
+;; LSP client
+(use-package lsp-bridge
+  :straight '(lsp-bridge :type git :host github :repo "manateelazycat/lsp-bridge"
+            :files (:defaults "*.el" "*.py" "acm" "core" "langserver" "multiserver" "resources")
+            :build (:not compile))
+  :init
+  (global-lsp-bridge-mode)
   :custom
-  ;; Improves performance
-  (eglot-events-buffer-size 0)
-  ;; Removes margin indications that shift line height
-  (eglot-code-action-indications '(eldoc-hint))
-  :config
-  ;; Python
-  (add-to-list 'eglot-server-programs
-	       '((python-mode python-ts-mode) "basedpyright"))
-  (add-to-list 'eglot-server-programs
-	       '((haskell-mode haskell-ts-mode) "haskell-language-server-wrapper" "--lsp")))
+  ;; Use only basedpyright
+  (lsp-bridge-multi-lang-server-mode-list nil))
 
 ;; Interpreters in buffer
 (use-package comint
@@ -455,27 +450,6 @@
   (treesit-auto-add-to-auto-mode-alist 'all)
   (global-treesit-auto-mode +1))
 
-;; Completion interface
-(use-package corfu
-  :init (global-corfu-mode +1)
-  :config
-  ;; Remember recent completions
-  (corfu-history-mode +1)
-  ;; Nerd icons
-  (straight-use-package 'nerd-icons-corfu)
-  (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter)
-  :custom
-  ;; Auto show completions
-  (corfu-auto t)
-  (corfu-auto-prefix 1)
-  (corfu-auto-delay 0.2)
-  ;; Cycle through completions
-  (corfu-cycle t)
-  ;; Hide commands in M-x which do not apply to the current mode.
-  (read-extended-command-predicate #'command-completion-default-include-p)
-  ;; Disable ispell
-  (text-mode-ispell-word-completion nil)
-  :bind (:map corfu-map ("M-SPC" . corfu-insert-separator)))
 
 ;; Fast terminal emulator
 (use-package vterm
@@ -502,9 +476,7 @@
 
 ;; LaTeX
 (use-package auctex
-  :hook
-  (;; Org-like heading-aware folding and navigation
-   (LaTeX-mode . outline-minor-mode))
+  :hook ((LaTeX-mode . outline-minor-mode))
   :custom
   ;; Save style information when saving buffer
   (TeX-auto-save t)
@@ -517,11 +489,9 @@
   ;; No save query when running command list
   (TeX-save-query nil)
   :config
-
-  ;; Navigate environments as balanced delims
-  (use-package tex-parens
-    :hook TeX-mode
-    :bind (:map TeX-mode-map ("C-M-w" . tex-parens-delete-pair)))
+  (use-package latex
+    :straight (:type built-in)
+    :bind (:map LaTeX-mode-map ("C-M-w" . tex-parens-delete-pair)))
 
   ;; Fast LaTeX entry
   (use-package cdlatex
@@ -532,14 +502,16 @@
 		       ;; Use my fork
 		       :fork (:host github
 				    :repo "ernkiim/cdlatex"))
+
     :custom
     ;; Turn off labels
     (cdlatex-insert-auto-labels-in-env-templates nil)
     ;; Use electric pairs
-    (cdlatex-takeover-parenthesis nil)
-    ;; Pair parentheses
-    ;; (cdlatex-paired-parens "${[(")
-    )
+    (cdlatex-takeover-parenthesis nil))
+
+  ;; Navigate environments as balanced delims
+  (use-package tex-parens
+    :hook LaTeX-mode)
 
   ;; Revert pdf after compile
   (add-hook 'TeX-after-compilation-finished-functions
@@ -551,12 +523,7 @@
   :hook (markdown-ts-mode . visual-line-mode))
 
 ;; Haskell
-(use-package haskell-ts-mode
-  :custom
-  (haskell-ts-font-lock-level 4)
-  (haskell-ts-use-indent t)
-  (haskell-ts-ghci "ghci")
-  (haskell-ts-use-indent t))
+(use-package haskell-mode)
 
 
 
