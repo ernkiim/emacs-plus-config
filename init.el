@@ -133,7 +133,7 @@
 ;; Theme
 (use-package gruvbox-theme
   :demand t
-  :custom (custom-enabled-themes '(gruvbox-dark-hard)))
+  :custom (custom-enabled-themes '(gruvbox-dark-medium)))
 
 ;; Minimal mode line
 (use-package mood-line
@@ -162,10 +162,6 @@
      (propertize (winum-get-number-string)
 		 'face
 		 '(:inherit mood-line-unimportant))))))
-
-;; Differentiate 'real' buffers
-(use-package solaire-mode
-  :init (solaire-global-mode +1))
 
 
 ;;; UX
