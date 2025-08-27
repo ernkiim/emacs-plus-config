@@ -115,7 +115,6 @@
 							       (kbd "C-i")
 							       (kbd "H-i"))))))
 
-
 ;; File system
 (use-package files
   :straight (:type built-in)
@@ -129,13 +128,12 @@
   (vc-follow-symlinks t))
 
 
-
 ;;; Appearance
 
 ;; Theme
 (use-package gruvbox-theme
   :demand t
-  :config (load-theme 'gruvbox))
+  :custom (custom-enabled-themes '(gruvbox-dark-hard)))
 
 ;; Minimal mode line
 (use-package mood-line
@@ -396,21 +394,6 @@
   (compilation-ask-about-save nil)
   (compilation-scroll-output 'first-error))
 
-;; Snippets
-(use-package yasnippet
-  :init (yas-global-mode +1))
-
-;; LSP client
-(use-package lsp-bridge
-  :straight '(lsp-bridge :type git :host github :repo "manateelazycat/lsp-bridge"
-            :files (:defaults "*.el" "*.py" "acm" "core" "langserver" "multiserver" "resources")
-            :build (:not compile))
-  :init
-  (global-lsp-bridge-mode)
-  :custom
-  ;; Use only basedpyright
-  (lsp-bridge-multi-lang-server-mode-list nil))
-
 ;; Interpreters in buffer
 (use-package comint
   :straight (:type built-in)
@@ -449,6 +432,22 @@
   (magit-no-confirm '(set-and-push
 		      discard ; Careful if not delete-by-moving-to-trash
 		      trash)))
+
+;; Snippets
+(use-package yasnippet
+  :init (yas-global-mode +1))
+
+;; LSP client
+(use-package lsp-bridge
+  :straight '(lsp-bridge :type git :host github :repo "manateelazycat/lsp-bridge"
+            :files (:defaults "*.el" "*.py" "acm" "core" "langserver" "multiserver" "resources")
+            :build (:not compile))
+  :init
+  (global-lsp-bridge-mode)
+  :custom
+  ;; Use only basedpyright
+  (lsp-bridge-multi-lang-server-mode-list nil))
+
 
 ;; Automatically install treesit modes
 (use-package treesit-auto
