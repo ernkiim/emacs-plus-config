@@ -165,6 +165,11 @@
 		 'face
 		 '(:inherit mood-line-unimportant))))))
 
+;; Differentiate 'real' buffers
+(use-package solaire-mode
+  :init (solaire-global-mode +1))
+
+
 ;;; UX
 
 ;; Delimiter highlighting
@@ -227,6 +232,10 @@
   (imenu-auto-rescan t)
   ;; Prevent truncation of long function names in 'imenu' listings
   (imenu-max-item-length 160))
+
+;; Browser integration
+(use-package atomic-chrome
+  :init (atomic-chrome-start-server))
 
 ;; Window switching
 (use-package winum
@@ -524,7 +533,6 @@
 
 ;; Haskell
 (use-package haskell-mode)
-
 
 
 ;;; Misc. major modes
