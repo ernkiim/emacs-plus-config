@@ -468,6 +468,18 @@
 
 ;;; Language major modes
 
+
+;; Markdown
+(use-package markdown-ts-mode
+  :straight (:type built-in)
+  :hook (markdown-ts-mode . visual-line-mode))
+
+(use-package org
+  :straight (:type built-in)
+  :hook (org-mode . visual-line-mode))
+
+(use-package org-roam)
+
 ;; Agda 2.8.0
 (use-package agda2
   :straight nil
@@ -521,11 +533,6 @@
   (add-hook 'TeX-after-compilation-finished-functions
 	    #'TeX-revert-document-buffer))
 
-;; Markdown
-(use-package markdown-ts-mode
-  :straight (:type built-in)
-  :hook (markdown-ts-mode . visual-line-mode))
-
 ;; Haskell
 (use-package haskell-mode)
 
@@ -543,8 +550,10 @@
   :custom
   ;; Don't hide symlink targets
   (dired-hide-details-hide-symlink-targets nil)
-  ;; Omit ., .. and .DS_Store
-  (dired-omit-files "^\\.?#\\|^\\.$\\|^\\.\\.$\\|\\.DS_Store"))
+  ;; Omit '.', '..', and .DS_Store
+  (dired-omit-files "^\\.?#\\|^\\.$\\|^\\.\\.$\\|\\.DS_Store")
+  ;; Omit silently
+  (dired-omit-verbose nil))
 
 ;; PDF interaction
 (use-package pdf-tools
