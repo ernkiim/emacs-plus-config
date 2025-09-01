@@ -476,9 +476,17 @@
 
 (use-package org
   :straight (:type built-in)
-  :hook (org-mode . visual-line-mode))
+  :hook
+  ((org-mode . visual-line-mode)
+   (org-mode . org-toggle-pretty-entities))
+  :custom
+  ;; Don't want to see header properties
+  (org-startup-folded t))
 
-(use-package org-roam)
+(use-package org-roam
+  :custom
+  ;; Cache Nodes automatically
+  (org-roam-db-autosync-mode t))
 
 ;; Agda 2.8.0
 (use-package agda2
