@@ -478,7 +478,8 @@
   :straight (:type built-in)
   :hook
   ((org-mode . visual-line-mode)
-   (org-mode . org-toggle-pretty-entities))
+   (org-mode . org-toggle-pretty-entities)
+   (org-mode . org-cdlatex-mode))
   :custom
   ;; Don't want to see header properties
   (org-startup-folded t))
@@ -500,7 +501,8 @@
 
 ;; LaTeX
 (use-package auctex
-  :hook ((LaTeX-mode . outline-minor-mode))
+  :hook ((LaTeX-mode . outline-minor-mode)
+	 (LaTeX-mode . visual-line-mode))
   :custom
   ;; Save style information when saving buffer
   (TeX-auto-save t)
@@ -544,6 +546,8 @@
 ;; Haskell
 (use-package haskell-mode)
 
+;; Scala
+(use-package scala-mode)
 
 ;;; Misc. major modes
 
