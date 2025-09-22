@@ -251,10 +251,6 @@
   ;; Minibuffer gets number '0'
   (winum-auto-assign-0-to-minibuffer t))
 
-;; Whitespace removal
-(use-package stripspace
-  :hook ((prog-mode text-mode conf-mode) . stripspace-local-mode))
-
 ;; Better undo
 (use-package undo-fu
   :bind (("s-z" . undo-fu-only-undo)
