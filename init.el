@@ -478,7 +478,7 @@
    (org-mode . org-cdlatex-mode))
   :custom
   ;; Don't want to see header properties
-  (org-startup-folded t))
+  (org-startup-folded 'content))
 
 (use-package org-roam
   :custom
