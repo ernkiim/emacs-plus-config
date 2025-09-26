@@ -477,8 +477,8 @@
    (org-mode . org-toggle-pretty-entities)
    (org-mode . org-cdlatex-mode))
   :custom
-  ;; Don't want to see header properties
-  (org-startup-folded 'content))
+  ;; Don't want to see properties block
+  (org-cycle-hide-block-startup t))
 
 (use-package org-roam
   :custom
