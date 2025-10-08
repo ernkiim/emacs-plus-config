@@ -1,7 +1,7 @@
 ;;; init.el --- Initialization file for Emacs -*- lexical-binding: t; -*-
 
 ;; TODO: Lazytab
-;; DONE: Back to LSP-bridge
+;; TODO: Get ws-butler from Emacs mirror instead of repo
 
 ;;; Bootstrapping
 
