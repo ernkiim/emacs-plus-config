@@ -227,6 +227,12 @@
   ;; Prevent truncation of long function names in 'imenu' listings
   (imenu-max-item-length 160))
 
+;; Trim whitespace on working lines
+(use-package ws-butler
+  :hook prog-mode
+  ;; Emacs mirror entry is broken
+  :straight (ws-trim :type git :host github :repo "lewang/ws-butler"))
+
 ;; Browser integration
 (use-package atomic-chrome
   :init (atomic-chrome-start-server))
