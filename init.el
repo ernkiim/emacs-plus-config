@@ -9,15 +9,15 @@
 (defvar bootstrap-version)
 (let ((bootstrap-file
        (expand-file-name
-        "straight/repos/straight.el/bootstrap.el"
-        (or (bound-and-true-p straight-base-dir)
-            user-emacs-directory)))
+	"straight/repos/straight.el/bootstrap.el"
+	(or (bound-and-true-p straight-base-dir)
+	    user-emacs-directory)))
       (bootstrap-version 7))
   (unless (file-exists-p bootstrap-file)
     (with-current-buffer
-        (url-retrieve-synchronously
-         "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
-         'silent 'inhibit-cookies)
+	(url-retrieve-synchronously
+	 "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+	 'silent 'inhibit-cookies)
       (goto-char (point-max))
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
@@ -311,8 +311,8 @@
     (save-excursion
       (goto-char pt)
       (cl-destructuring-bind (start . end)
-          (bounds-of-thing-at-point 'line)
-        (copy-region-as-kill start end)))
+	  (bounds-of-thing-at-point 'line)
+	(copy-region-as-kill start end)))
     (select-window
      (cdr
       (ring-ref avy-ring 0)))
@@ -364,7 +364,7 @@
 (use-package orderless
   :custom
   (completion-styles '(orderless
-                       basic
+		       basic
 		       substring
 		       initials
 		       flex))
@@ -430,15 +430,15 @@
   :init (yas-global-mode +1))
 
 ;; LSP client
-(use-package lsp-bridge
-  :straight '(lsp-bridge :type git :host github :repo "manateelazycat/lsp-bridge"
-            :files (:defaults "*.el" "*.py" "acm" "core" "langserver" "multiserver" "resources")
-            :build (:not compile))
-  :init
-  (global-lsp-bridge-mode)
-  :custom
-  ;; Use only basedpyright
-  (lsp-bridge-multi-lang-server-mode-list nil))
+;; (use-package lsp-bridge
+;;   :straight '(lsp-bridge :type git :host github :repo "manateelazycat/lsp-bridge"
+;;             :files (:defaults "*.el" "*.py" "acm" "core" "langserver" "multiserver" "resources")
+;;             :build (:not compile))
+;;   :init
+;;   (global-lsp-bridge-mode)
+;;   :custom
+;;   ;; Use only basedpyright
+;;   (lsp-bridge-multi-lang-server-mode-list nil))
 
 
 ;; Automatically install treesit modes
@@ -475,10 +475,7 @@
   :hook
   ((org-mode . visual-line-mode)
    (org-mode . org-toggle-pretty-entities)
-   (org-mode . org-cdlatex-mode))
-  :custom
-  ;; Don't want to see properties block
-  (org-cycle-hide-block-startup t))
+   (org-mode . org-cdlatex-mode)))
 
 (use-package org-roam
   :custom
@@ -539,11 +536,13 @@
   (add-hook 'TeX-after-compilation-finished-functions
 	    #'TeX-revert-document-buffer))
 
+
+
 ;; Haskell
 (use-package haskell-mode)
 
 ;; Scala
-(use-package scala-mode)
+(use-package scala-ts-mode)
 
 ;;; Misc. major modes
 
