@@ -577,15 +577,15 @@
   (straight-use-package 'saveplace-pdf-view))
 
 
-
-;; Music
-(use-package emms
-  :config (emms-all)
+;; Music/media
+(use-package ready-player
+  :config
+  (ready-player-mode +1)
   :custom
-  ;; Use mpd
-  (emms-player-list '(emms-player-mpd))
-  ;; Default
-  (emms-info-functions '(emms-info-native)))
+  ;; Don't hide mode line
+  (ready-player-hide-modeline nil)
+  ;; Don't show sponsor message
+  (ready-player-ask-for-project-sustainability nil))
 
 ;;; Cleanup
 
