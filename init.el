@@ -436,16 +436,15 @@
   :init (yas-global-mode +1))
 
 ;; LSP client
-;; (use-package lsp-bridge
-;;   :straight '(lsp-bridge :type git :host github :repo "manateelazycat/lsp-bridge"
-;;             :files (:defaults "*.el" "*.py" "acm" "core" "langserver" "multiserver" "resources")
-;;             :build (:not compile))
-;;   :init
-;;   (global-lsp-bridge-mode)
-;;   :custom
-;;   ;; Use only basedpyright
-;;   (lsp-bridge-multi-lang-server-mode-list nil))
-
+(use-package lsp-bridge
+  :straight '(lsp-bridge :type git :host github :repo "manateelazycat/lsp-bridge"
+            :files (:defaults "*.el" "*.py" "acm" "core" "langserver" "multiserver" "resources")
+            :build (:not compile))
+  :init
+  (global-lsp-bridge-mode)
+  :custom
+  ;; Use only basedpyright
+  (lsp-bridge-multi-lang-server-mode-list nil))
 
 ;; Automatically install treesit modes
 (use-package treesit-auto
@@ -548,7 +547,7 @@
 (use-package haskell-mode)
 
 ;; Scala
-(use-package scala-ts-mode)
+(use-package scala-mode)
 
 ;;; Misc. major modes
 
@@ -577,6 +576,16 @@
   ;; Save place in pdf buffer
   (straight-use-package 'saveplace-pdf-view))
 
+
+
+;; Music
+(use-package emms
+  :config (emms-all)
+  :custom
+  ;; Use mpd
+  (emms-player-list '(emms-player-mpd))
+  ;; Default
+  (emms-info-functions '(emms-info-native)))
 
 ;;; Cleanup
 
