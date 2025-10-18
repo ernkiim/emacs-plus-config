@@ -562,8 +562,11 @@
   :custom
   ;; Don't hide symlink targets
   (dired-hide-details-hide-symlink-targets nil)
-  ;; Omit '.', '..', and .DS_Store
-  (dired-omit-files "^\\.?#\\|^\\.$\\|^\\.\\.$\\|\\.DS_Store")
+  ;; Don't list '.', '..' (separate from omit)
+  (dired-listing-switches "-l -A -h -v --group-directories-first")
+  ;; Omit '.DS_STORE' and '.localized'
+  (dired-omit-files (rx (or (seq bol ".DS_STORE" eol)
+			    (seq bol ".localized" eol))))
   ;; Omit silently
   (dired-omit-verbose nil))
 
