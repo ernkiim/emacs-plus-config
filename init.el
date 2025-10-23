@@ -554,6 +554,7 @@
 ;; Directory editing and navigation
 (use-package dired
   :straight (:type built-in)
+  :config (require 'dired-x)
   :hook
   (;; Hide permissions vector, owner etc.
    (dired-mode . dired-hide-details-mode)
@@ -579,16 +580,15 @@
   ;; Save place in pdf buffer
   (straight-use-package 'saveplace-pdf-view))
 
-
 ;; Music/media
 (use-package ready-player
-  :config
-  (ready-player-mode +1)
+  :config (ready-player-mode +1)
   :custom
   ;; Don't hide mode line
   (ready-player-hide-modeline nil)
   ;; Don't show sponsor message
   (ready-player-ask-for-project-sustainability nil))
+
 
 ;;; Cleanup
 
