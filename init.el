@@ -218,25 +218,6 @@
   (global-auto-revert-non-file-buffers t)
   (global-auto-revert-ignore-modes '(Buffer-menu-mode)))
 
-;; Imenu
-(use-package imenu
-  :straight (:type built-in)
-  :custom
-  ;; Rescan when imenu invoked
-  (imenu-auto-rescan t)
-  ;; Prevent truncation of long function names in 'imenu' listings
-  (imenu-max-item-length 160))
-
-;; Trim whitespace on working lines
-(use-package ws-butler
-  :hook prog-mode
-  ;; Emacs mirror entry is broken
-  :straight (ws-trim :type git :host github :repo "lewang/ws-butler"))
-
-;; Browser integration
-(use-package atomic-chrome
-  :init (atomic-chrome-start-server))
-
 ;; Window switching
 (use-package winum
   :init (winum-mode +1)
@@ -263,6 +244,7 @@
 	 ("s-Z" . undo-fu-only-redo)))
 
 ;; Fast navigation and shortcut actions
+;; TODO: Better actions
 (use-package avy
   :bind (("H-i" . avy-goto-char-2) ; C-i
 	 :map isearch-mode-map
@@ -275,67 +257,9 @@
   (avy-background t)
   ;; Allow shortcuts on single match
   (avy-single-candidate-jump nil)
-  ;; Shortcuts
-  (avy-dispatch-alist
-   '((?\; . avy-action-comment-whole-line)
-     (?k . avy-action-kill-stay)
-     (?K . avy-action-kill-whole-line)
-     (?w . avy-action-copy)
-     (?W . avy-action-copy-whole-line)
-     (?y . avy-action-yank)
-     (?Y . avy-action-yank-whole-line)
-     (?p . avy-action-teleport)
-     (?P . avy-action-teleport-whole-line)
-     (?z . avy-action-zap-to-char)
-     (?m . avy-action-mark)
-     (? . avy-action-mark-to-char)))
   :config
   ;; Let closer matches be shallower in selection tree
-  (add-to-list 'avy-orders-alist '(avy-goto-char-2 . avy-order-closest))
-
-  (defun avy-action-comment-whole-line (pt)
-    "Comment item at pt"
-    (save-excursion
-      (goto-char pt)
-      (comment-line 1))
-    (select-window
-     (cdr
-      (ring-ref avy-ring 0)))
-    t)
-
-  (defun avy-action-kill-whole-line (pt)
-    "Kill text"
-    (save-excursion
-      (goto-char pt)
-      (kill-whole-line))
-    (select-window
-     (cdr
-      (ring-ref avy-ring 0)))
-    t)
-
-  (defun avy-action-copy-whole-line (pt)
-    (save-excursion
-      (goto-char pt)
-      (cl-destructuring-bind (start . end)
-	  (bounds-of-thing-at-point 'line)
-	(copy-region-as-kill start end)))
-    (select-window
-     (cdr
-      (ring-ref avy-ring 0)))
-    t)
-
-  (defun avy-action-yank-whole-line (pt)
-    (avy-action-copy-whole-line pt)
-    (save-excursion (yank))
-    t)
-
-  (defun avy-action-teleport-whole-line (pt)
-    (avy-action-kill-whole-line pt)
-    (save-excursion (yank)) t)
-
-  (defun avy-action-mark-to-char (pt)
-    (activate-mark)
-    (goto-char pt)))
+  (add-to-list 'avy-orders-alist '(avy-goto-char-2 . avy-order-closest)))
 
 
 ;;; Vert&co
@@ -430,31 +354,6 @@
   (magit-no-confirm '(set-and-push
 		      discard ; Careful if not delete-by-moving-to-trash
 		      trash)))
-
-;; Snippets
-(use-package yasnippet
-  :init (yas-global-mode +1))
-
-;; LSP client
-(use-package lsp-bridge
-  :straight '(lsp-bridge :type git :host github :repo "manateelazycat/lsp-bridge"
-            :files (:defaults "*.el" "*.py" "acm" "core" "langserver" "multiserver" "resources")
-            :build (:not compile))
-  :init
-  (global-lsp-bridge-mode)
-  :custom
-  ;; Use only basedpyright
-  (lsp-bridge-multi-lang-server-mode-list nil))
-
-;; Automatically install treesit modes
-(use-package treesit-auto
-  :custom
-  ;; Prompt to install new grammar
-  (treesit-auto-install 'prompt)
-  :config
-  (treesit-auto-add-to-auto-mode-alist 'all)
-  (global-treesit-auto-mode +1))
-
 
 ;; Fast terminal emulator
 (use-package vterm
@@ -554,7 +453,7 @@
 ;; Directory editing and navigation
 (use-package dired
   :straight (:type built-in)
-  :config (require 'dired-x)
+  :config (straight-use-package 'dired-x)
   :hook
   (;; Hide permissions vector, owner etc.
    (dired-mode . dired-hide-details-mode)
