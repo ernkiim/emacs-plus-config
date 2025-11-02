@@ -380,10 +380,8 @@
    (org-mode . org-toggle-pretty-entities)
    (org-mode . org-cdlatex-mode)))
 
-(use-package org-roam
-  :custom
-  ;; Cache Nodes automatically
-  (org-roam-db-autosync-mode t))
+(use-package org-roam)
+
 
 ;; Agda 2.8.0
 (use-package agda2
@@ -397,9 +395,8 @@
 
 ;; Lean4
 (use-package nael
-  :straight (nael :type git
-		  :host codeberg
-		  :repo https://codeberg.org/mekeor/nael.git))
+  :straight (nael :repo "https://codeberg.org/mekeor/nael"
+		  :files ("nael/nael.el" :defaults)))
 
 ;; LaTeX
 (use-package auctex
