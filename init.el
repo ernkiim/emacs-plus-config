@@ -396,7 +396,9 @@
 ;; Lean4
 (use-package nael
   :straight (nael :repo "https://codeberg.org/mekeor/nael"
-		  :files ("nael/nael.el" :defaults)))
+		  :files ("nael/" :defaults))
+  :hook ((nael-mode . abbrev-mode)
+	 (nael-mode . eglot-ensure)))
 
 ;; LaTeX
 (use-package auctex
