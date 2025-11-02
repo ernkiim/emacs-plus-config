@@ -1,7 +1,6 @@
 ;;; init.el --- Initialization file for Emacs -*- lexical-binding: t; -*-
 
 ;; TODO: Lazytab
-;; TODO: Get ws-butler from Emacs mirror instead of repo
 
 ;;; Bootstrapping
 
@@ -395,6 +394,12 @@
   :custom
   ;; Highlight the expression being type-checked
   (agda2-highlight-level 'interactive))
+
+;; Lean4
+(use-package nael
+  :straight (nael :type git
+		  :host codeberg
+		  :repo https://codeberg.org/mekeor/nael.git))
 
 ;; LaTeX
 (use-package auctex
