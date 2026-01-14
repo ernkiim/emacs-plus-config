@@ -59,6 +59,8 @@
   (setq custom-file (concat user-emacs-directory "custom.el"))
   (load custom-file 'noerror t)
   :custom
+  ;; Only warn when opening files above 100mb
+  (large-file-warning-threshold (* 100 1000 1000))
   ;; Thin bar cursor
   (cursor-type 'bar)
   ;; Make cursor flash instead of blinking
@@ -367,12 +369,6 @@
 
 ;;; Language major modes
 
-
-;; Markdown
-(use-package markdown-ts-mode
-  :straight (:type built-in)
-  :hook (markdown-ts-mode . visual-line-mode))
-
 (use-package org
   :straight (:type built-in)
   :hook
@@ -398,7 +394,10 @@
   :straight (nael :repo "https://codeberg.org/mekeor/nael"
 		  :files ("nael/" :defaults))
   :hook ((nael-mode . abbrev-mode)
-	 (nael-mode . eglot-ensure)))
+	 (nael-mode . eglot-ensure))
+  :custom
+  ;; Not sure why this isn't default
+  (indent-tabs-mode nil))
 
 ;; LaTeX
 (use-package auctex
@@ -457,7 +456,7 @@
 ;; Directory editing and navigation
 (use-package dired
   :straight (:type built-in)
-  :config (straight-use-package 'dired-x)
+  :config (use-package dired-x :straight (:type built-in))
   :hook
   (;; Hide permissions vector, owner etc.
    (dired-mode . dired-hide-details-mode)
