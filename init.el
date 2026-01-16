@@ -362,6 +362,7 @@
 	 ("s-t" . vterm-other-window)
 	 :map vterm-mode-map
 	 ("C-y" . vterm-yank))
+  
   :custom
   ;; Completely clear terminal on 'C-l'
   (vterm-clear-scrollback-when-clearing t))
@@ -374,7 +375,16 @@
   :hook
   ((org-mode . visual-line-mode)
    (org-mode . org-toggle-pretty-entities)
-   (org-mode . org-cdlatex-mode)))
+   (org-mode . org-cdlatex-mode))
+  :custom
+  ;; Org source block languages
+  (org-babel-load-languages '((emacs-lisp . t)
+                              (haskell . t)
+                              (python . t)))
+  ;; Run source blocks without confirmation
+  (org-confirm-babel-evaluate nil)
+  ;; Use default virtual env for python
+  (org-babel-python-command "~/.venv/bin/python"))
 
 (use-package org-roam)
 
@@ -384,10 +394,7 @@
   :straight nil
   :load-path
   (lambda ()
-    (file-name-directory (shell-command-to-string "agda --emacs-mode locate")))
-  :custom
-  ;; Highlight the expression being type-checked
-  (agda2-highlight-level 'interactive))
+    (file-name-directory (shell-command-to-string "agda --emacs-mode locate"))))
 
 ;; Lean4
 (use-package nael
