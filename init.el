@@ -245,7 +245,6 @@
 	 ("s-Z" . undo-fu-only-redo)))
 
 ;; Fast navigation and shortcut actions
-;; TODO: Better actions
 (use-package avy
   :bind (("H-i" . avy-goto-char-2) ; C-i
 	 :map isearch-mode-map
@@ -254,6 +253,14 @@
   :custom
   ;; Use colemak home row
   (avy-keys '(?n ?t ?e ?s ?i ?r ?o ?a))
+  (avy-dispatch-alist '((?k . avy-action-kill-move)
+                        (?K . avy-action-kill-stay)
+                        (?m . avy-action-mark)
+                        (?c . avy-action-copy)
+                        (?y . avy-action-yank)
+                        (?Y . avy-action-yank-line)
+                        (?l . avy-action-ispell)
+                        (?z . avy-action-zap-to-char)))
   ;; Dim other text when selecting match
   (avy-background t)
   ;; Allow shortcuts on single match
