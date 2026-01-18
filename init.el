@@ -253,6 +253,7 @@
   :custom
   ;; Use colemak home row
   (avy-keys '(?n ?t ?e ?s ?i ?r ?o ?a))
+  ;; Rebind action keys
   (avy-dispatch-alist '((?k . avy-action-kill-move)
                         (?K . avy-action-kill-stay)
                         (?m . avy-action-mark)
