@@ -128,6 +128,9 @@
   (find-file-visit-truename t)
   (vc-follow-symlinks t))
 
+;; I give up. Just use this
+(use-package exec-path-from-shell
+  :init (when (daemonp) (exec-path-from-shell-initialize)))
 
 ;;; Appearance
 
@@ -223,16 +226,16 @@
 (use-package winum
   :init (winum-mode +1)
   :bind
-  (("s-0" . winum-select-window-0-or-10)
-   ("s-1" . winum-select-window-1)
-   ("s-2" . winum-select-window-2)
-   ("s-3" . winum-select-window-3)
-   ("s-4" . winum-select-window-4)
-   ("s-5" . winum-select-window-5)
-   ("s-6" . winum-select-window-6)
-   ("s-7" . winum-select-window-7)
-   ("s-8" . winum-select-window-8)
-   ("s-9" . winum-select-window-9))
+  (("M-0" . winum-select-window-0-or-10)
+   ("M-1" . winum-select-window-1)
+   ("M-2" . winum-select-window-2)
+   ("M-3" . winum-select-window-3)
+   ("M-4" . winum-select-window-4)
+   ("M-5" . winum-select-window-5)
+   ("M-6" . winum-select-window-6)
+   ("M-7" . winum-select-window-7)
+   ("M-8" . winum-select-window-8)
+   ("M-9" . winum-select-window-9))
   :custom
   ;; Insert window number manually in mood-line
   (winum-auto-setup-mode-line nil)
@@ -241,8 +244,8 @@
 
 ;; Better undo
 (use-package undo-fu
-  :bind (("s-z" . undo-fu-only-undo)
-	 ("s-Z" . undo-fu-only-redo)))
+  :bind (("C-z" . undo-fu-only-undo)
+	 ("C-S-z" . undo-fu-only-redo)))
 
 ;; Fast navigation and shortcut actions
 (use-package avy
@@ -287,17 +290,16 @@
 ;; Completing-read commands
 (use-package consult
   :bind
-  (("s-l"     . consult-goto-line)
-   ("M-g g"   . consult-goto-line)
-   ("M-g M-g" . consult-goto-line)
-   ("M-y"     . consult-yank-pop)
-   ("s-f"     . consult-line)
-   ("C-x b"   . consult-buffer)
-   ("C-x C-b" . consult-buffer))
+  (("M-g l"   . consult-goto-line)
+   ("M-g M-l" . consult-goto-line)
+   ("M-y"   . consult-yank-pop)
+   ("M-g f" . consult-line)
+   ("M-g M-f" . consult-line)
+   ("C-x b" . consult-buffer))
   :hook (completion-list-mode . consult-preview-at-point-mode)
   :config
   (use-package consult-todo
-    :bind ("s-d" . consult-todo)))
+    :bind ("M-g d" . consult-todo)))
 
 ;; Order-insensitive keyword search
 (use-package orderless
@@ -352,7 +354,7 @@
     (magit-todos-branch-list nil))
   :custom
   ;; Hardcode git path
-  (magit-git-executable "/opt/homebrew/bin/git")
+;;  (magit-git-executable "/opt/homebrew/bin/git")
   ;; Add magit-status, -dispatch, and -file-dispatch actions to global
   (magit-maybe-define-global-key-bindings recommended)
   ;; Don't refresh status buffer, only current buffer
@@ -366,11 +368,20 @@
 
 ;; Fast terminal emulator
 (use-package vterm
-  :bind (("s-T" . vterm)
-	 ("s-t" . vterm-other-window)
+  :bind (("C-c T" . vterm)
+	 ("C-c t" . vterm-other-window)
 	 :map vterm-mode-map
-	 ("C-y" . vterm-yank))
-  
+	 ("C-y" . vterm-yank)
+         ("M-0" . winum-select-window-0-or-10)
+         ("M-1" . winum-select-window-1)
+         ("M-2" . winum-select-window-2)
+         ("M-3" . winum-select-window-3)
+         ("M-4" . winum-select-window-4)
+         ("M-5" . winum-select-window-5)
+         ("M-6" . winum-select-window-6)
+         ("M-7" . winum-select-window-7)
+         ("M-8" . winum-select-window-8)
+         ("M-9" . winum-select-window-9))
   :custom
   ;; Completely clear terminal on 'C-l'
   (vterm-clear-scrollback-when-clearing t))
@@ -390,9 +401,7 @@
                               (haskell . t)
                               (python . t)))
   ;; Run source blocks without confirmation
-  (org-confirm-babel-evaluate nil)
-  ;; Use default virtual env for python
-  (org-babel-python-command "~/.venv/bin/python"))
+  (org-confirm-babel-evaluate nil))
 
 (use-package org-roam)
 
@@ -466,6 +475,14 @@
 ;; Scala
 (use-package scala-mode)
 
+
+;; Python ide features
+(use-package python
+  :straight (:type built-in)
+  :custom
+  ;; Use uv
+  (python-shell-interpreter "python3"))
+
 ;;; Misc. major modes
 
 ;; Directory editing and navigation
@@ -478,6 +495,8 @@
    ;; Hide unwanted file names
    (dired-mode . dired-omit-mode))
   :custom
+  ;; Target the directory shown in another dired buffer
+  (dired-dwim-target t)
   ;; Don't hide symlink targets
   (dired-hide-details-hide-symlink-targets nil)
   ;; Don't list '.', '..' (separate from omit)
@@ -491,6 +510,7 @@
 ;; PDF interaction
 (use-package pdf-tools
   :magic ("%PDF" . pdf-view-mode)
+  :hook ((pdf-view-mode . pdf-view-midnight-minor-mode))
   :config
   ;; Initialize
   (pdf-tools-install :no-query)
