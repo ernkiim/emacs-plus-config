@@ -135,9 +135,8 @@
 ;;; Appearance
 
 ;; Theme
-(use-package gruvbox-theme
-  :demand t
-  :custom (custom-enabled-themes '(gruvbox-dark-medium)))
+(use-package kanagawa-themes
+  :custom (custom-enabled-themes '(kanagawa-wave)))
 
 ;; Minimal mode line
 (use-package mood-line
@@ -169,7 +168,7 @@
 
 
 ;;; UX
-
+   
 ;; Delimiter highlighting
 (use-package paren
   :straight (:type built-in)
