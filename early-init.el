@@ -131,7 +131,7 @@ Reset VAR to its value at time of calling on HOOK"
 				    ;; Borders
 				    (internal-border-width . 2)
 				    ;; Font
-				    ;; (font . "JuliaMono-16")
+;;				    (font . "Iosevka Extended 12")
 				    ))
 
 ;; Frame title

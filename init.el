@@ -59,6 +59,8 @@
   (setq custom-file (concat user-emacs-directory "custom.el"))
   (load custom-file 'noerror t)
   :custom
+  ;; Start on vterm
+  (initial-buffer-choice 'vterm)
   ;; Only warn when opening files above 100mb
   (large-file-warning-threshold (* 100 1000 1000))
   ;; Thin bar cursor
@@ -135,8 +137,8 @@
 ;;; Appearance
 
 ;; Theme
-(use-package kanagawa-themes
-  :custom (custom-enabled-themes '(kanagawa-wave)))
+(use-package gruvbox-theme
+  :init (load-theme 'gruvbox))
 
 ;; Minimal mode line
 (use-package mood-line
@@ -272,6 +274,12 @@
   ;; Let closer matches be shallower in selection tree
   (add-to-list 'avy-orders-alist '(avy-goto-char-2 . avy-order-closest)))
 
+
+
+;; Selectively make modeline invisible
+(use-package hide-mode-line
+  :after vterm
+  :hook vterm-mode)
 
 ;;; Vert&co
 
@@ -509,7 +517,7 @@
 ;; PDF interaction
 (use-package pdf-tools
   :magic ("%PDF" . pdf-view-mode)
-  :hook ((pdf-view-mode . pdf-view-midnight-minor-mode))
+  :hook ((pdf-view-mode . pdf-view-themed-minor-mode))
   :config
   ;; Initialize
   (pdf-tools-install :no-query)
